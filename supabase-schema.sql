@@ -81,3 +81,28 @@ $$ language plpgsql security definer;
 create trigger on_checkin_insert
   after insert on checkins
   for each row execute function increment_visit_count();
+
+-- indexes
+create index if not exists idx_lives_date on lives(date desc);
+create index if not exists idx_checkins_user_id on checkins(user_id);
+create index if not exists idx_checkins_live_id on checkins(live_id);
+create index if not exists idx_points_user_id_created_at on points(user_id, created_at desc);
+create index if not exists idx_diaries_created_at on diaries(created_at desc);
+
+-- auto-create profile on signup (works even when email confirmation is enabled)
+create or replace function handle_new_user()
+returns trigger as $$
+begin
+  insert into profiles (user_id, nickname)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'nickname', split_part(new.email, '@', 1))
+  )
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();
