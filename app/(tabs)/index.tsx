@@ -25,26 +25,27 @@ const STAGE_COLORS: Record<Stage, string> = {
 
 export default function HomeScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setUserId(user.id);
-    const p = await getProfile(user.id);
-    setProfile(p);
-    setLoading(false);
-  }
+  const load = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const p = await getProfile(user.id);
+      setProfile(p);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (

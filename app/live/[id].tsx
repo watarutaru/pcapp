@@ -43,8 +43,8 @@ export default function LiveDetailScreen() {
       await addPoints(userId, 50, `ライブ参戦: ${live.title}`);
       setIsCheckedIn(true);
       Alert.alert('チェックイン完了！', '50ポイントを獲得しました！🎉');
-    } catch (e: any) {
-      Alert.alert('エラー', e.message);
+    } catch (e) {
+      Alert.alert('エラー', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setChecking(false);
     }

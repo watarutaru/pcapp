@@ -16,7 +16,7 @@ export default function LiveScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const [livesData, { data: { user } }] = await Promise.all([
       getLives(),
       supabase.auth.getUser(),
@@ -27,15 +27,15 @@ export default function LiveScreen() {
       setCheckedInIds(new Set(checkins.map(c => c.live_id)));
     }
     setLoading(false);
-  }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (

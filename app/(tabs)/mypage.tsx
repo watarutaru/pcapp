@@ -18,26 +18,29 @@ export default function MyPageScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setUserId(user.id);
-    const [p, ph] = await Promise.all([
-      getProfile(user.id),
-      getPointHistory(user.id),
-    ]);
-    setProfile(p);
-    setPoints(ph);
-    setLoading(false);
-  }
+  const load = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+      const [p, ph] = await Promise.all([
+        getProfile(user.id),
+        getPointHistory(user.id),
+      ]);
+      setProfile(p);
+      setPoints(ph);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   async function handleSignOut() {
     Alert.alert('ログアウト', 'ログアウトしますか？', [

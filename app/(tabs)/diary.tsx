@@ -19,19 +19,19 @@ export default function DiaryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const data = await getDiaries();
     setDiaries(data);
     setLoading(false);
-  }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (
