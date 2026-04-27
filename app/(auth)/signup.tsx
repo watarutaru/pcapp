@@ -4,33 +4,42 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { signUp } from '@/lib/auth';
+import { sendMagicLink } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
 
 export default function SignupScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   async function handleSignup() {
-    if (!email || !password || !nickname) {
+    if (!email || !nickname) {
       Alert.alert('エラー', 'すべての項目を入力してください');
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert('エラー', 'パスワードは6文字以上にしてください');
       return;
     }
     setLoading(true);
     try {
-      await signUp(email, password, nickname);
-      Alert.alert('登録完了', '確認メールを送信しました。メールを確認してください。');
+      await sendMagicLink(email, nickname);
+      setSent(true);
     } catch (e: any) {
       Alert.alert('登録失敗', e.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (sent) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
+        <Text style={styles.title}>メールを確認してください</Text>
+        <Text style={styles.description}>
+          {email} にログインリンクを送信しました。{'\n'}
+          メール内のリンクをタップしてログインできます。
+        </Text>
+      </View>
+    );
   }
 
   return (
@@ -58,20 +67,12 @@ export default function SignupScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="パスワード（6文字以上）"
-          placeholderTextColor={Colors.textSecondary}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
 
         <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>登録する</Text>
+            <Text style={styles.buttonText}>登録してログイン</Text>
           )}
         </TouchableOpacity>
 
@@ -90,6 +91,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    paddingHorizontal: 32,
+    gap: 16,
+  },
   inner: {
     flex: 1,
     justifyContent: 'center',
@@ -107,6 +116,12 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 40,
+  },
+  description: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
   input: {
     backgroundColor: Colors.surface,
