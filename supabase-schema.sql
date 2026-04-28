@@ -12,8 +12,8 @@ create table if not exists profiles (
 -- 管理者を付与するには以下を実行（Supabase SQL Editor）:
 -- UPDATE profiles SET role = 'admin' WHERE user_id = '<対象ユーザーのUUID>';
 alter table profiles enable row level security;
-create policy "Users can view own profile" on profiles for select using (auth.uid() = user_id);
-create policy "Users can update own profile" on profiles for update using (auth.uid() = user_id);
+create policy "Users can view own profile" on profiles for select using (auth.uid() = user_id or is_admin());
+create policy "Users can update own profile" on profiles for update using (auth.uid() = user_id or is_admin());
 create policy "Users can insert own profile" on profiles for insert with check (auth.uid() = user_id);
 
 -- lives
@@ -38,7 +38,7 @@ create table if not exists checkins (
 );
 alter table checkins enable row level security;
 create policy "Users can view own checkins" on checkins for select using (auth.uid() = user_id);
-create policy "Users can insert own checkins" on checkins for insert with check (auth.uid() = user_id);
+create policy "Users can insert own checkins" on checkins for insert with check (auth.uid() = user_id or is_admin());
 
 -- points
 create table if not exists points (
@@ -50,7 +50,7 @@ create table if not exists points (
 );
 alter table points enable row level security;
 create policy "Users can view own points" on points for select using (auth.uid() = user_id);
-create policy "Users can insert own points" on points for insert with check (auth.uid() = user_id);
+create policy "Users can insert own points" on points for insert with check (auth.uid() = user_id or is_admin());
 
 -- diaries
 create table if not exists diaries (
@@ -71,6 +71,15 @@ create table if not exists push_tokens (
 );
 alter table push_tokens enable row level security;
 create policy "Users can manage own push token" on push_tokens for all using (auth.uid() = user_id);
+
+-- adminロール判定ヘルパー（RLSポリシー内で使用）
+create or replace function is_admin()
+returns boolean as $$
+  select exists (
+    select 1 from profiles
+    where user_id = auth.uid() and role = 'admin'
+  );
+$$ language sql security definer stable;
 
 -- visit_count trigger (checkin時にprofilesのvisit_countを自動更新)
 create or replace function increment_visit_count()
@@ -112,3 +121,18 @@ create trigger on_auth_user_created
 
 -- migration: 既存DBへの適用（新規作成時は不要）
 -- alter table profiles add column if not exists role text not null default 'member' check (role in ('member', 'admin'));
+
+-- migration: RLSポリシーの更新（既存DBへの適用）
+-- create or replace function is_admin()
+-- returns boolean as $$
+--   select exists (select 1 from profiles where user_id = auth.uid() and role = 'admin');
+-- $$ language sql security definer stable;
+--
+-- drop policy if exists "Users can view own profile" on profiles;
+-- create policy "Users can view own profile" on profiles for select using (auth.uid() = user_id or is_admin());
+-- drop policy if exists "Users can update own profile" on profiles;
+-- create policy "Users can update own profile" on profiles for update using (auth.uid() = user_id or is_admin());
+-- drop policy if exists "Users can insert own checkins" on checkins;
+-- create policy "Users can insert own checkins" on checkins for insert with check (auth.uid() = user_id or is_admin());
+-- drop policy if exists "Users can insert own points" on points;
+-- create policy "Users can insert own points" on points for insert with check (auth.uid() = user_id or is_admin());
