@@ -3,11 +3,14 @@ create table if not exists profiles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null unique,
   nickname text not null,
+  role text not null default 'member' check (role in ('member', 'admin')),
   stage text not null default 'ROOKIE',
   total_points integer not null default 0,
   visit_count integer not null default 0,
   created_at timestamptz not null default now()
 );
+-- 管理者を付与するには以下を実行（Supabase SQL Editor）:
+-- UPDATE profiles SET role = 'admin' WHERE user_id = '<対象ユーザーのUUID>';
 alter table profiles enable row level security;
 create policy "Users can view own profile" on profiles for select using (auth.uid() = user_id);
 create policy "Users can update own profile" on profiles for update using (auth.uid() = user_id);
@@ -106,3 +109,6 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function handle_new_user();
+
+-- migration: 既存DBへの適用（新規作成時は不要）
+-- alter table profiles add column if not exists role text not null default 'member' check (role in ('member', 'admin'));

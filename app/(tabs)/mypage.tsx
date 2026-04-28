@@ -3,18 +3,23 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   RefreshControl, ActivityIndicator, Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { getProfile, getPointHistory } from '@/lib/profiles';
 import { signOut } from '@/lib/auth';
-import { Profile, Point } from '@/lib/types';
+import { Profile, Point, Stage } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 
+const STAGE_LABELS: Record<Stage, string> = {
+  ROOKIE: '🌱 ROOKIE',
+  FAN: '⭐ FAN',
+  SUPPORTER: '🌟 SUPPORTER',
+  CYCLONER: '💫 CYCLONER',
+  LEGEND: '🌀 LEGEND',
+};
+
 export default function MyPageScreen() {
-  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [points, setPoints] = useState<Point[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -22,7 +27,6 @@ export default function MyPageScreen() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setUserId(user.id);
       const [p, ph] = await Promise.all([
         getProfile(user.id),
         getPointHistory(user.id),
@@ -55,9 +59,6 @@ export default function MyPageScreen() {
     ]);
   }
 
-  function handleQrScan() {
-    router.push('/qr-checkin' as any);
-  }
 
   if (loading) {
     return (
@@ -78,18 +79,25 @@ export default function MyPageScreen() {
 
       {profile && (
         <View style={styles.profileCard}>
-          <Text style={styles.nickname}>{profile.nickname}</Text>
-          <Text style={styles.email}>{userId?.slice(0, 8)}...</Text>
+          <View style={styles.profileCardHeader}>
+            <Text style={styles.nickname}>{profile.nickname}</Text>
+            <Text style={styles.stageBadge}>
+              {STAGE_LABELS[profile.stage as Stage]}
+            </Text>
+          </View>
+          <View style={styles.statsRow}>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{profile.total_points}</Text>
+              <Text style={styles.statLabel}>ポイント</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{profile.visit_count}</Text>
+              <Text style={styles.statLabel}>参戦回数</Text>
+            </View>
+          </View>
         </View>
       )}
-
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleQrScan}>
-          <Text style={styles.actionEmoji}>📷</Text>
-          <Text style={styles.actionLabel}>QRチェックイン</Text>
-          <Text style={styles.actionArrow}>→</Text>
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>ポイント履歴</Text>
@@ -131,8 +139,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 24, backgroundColor: Colors.surface, borderRadius: 16,
     padding: 20, marginBottom: 16, borderWidth: 1, borderColor: Colors.border,
   },
-  nickname: { fontSize: 20, fontWeight: 'bold', color: Colors.text, marginBottom: 4 },
-  email: { fontSize: 13, color: Colors.textSecondary },
+  profileCardHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
+  },
+  nickname: { fontSize: 20, fontWeight: 'bold', color: Colors.text },
+  stageBadge: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  statsRow: {
+    flexDirection: 'row', justifyContent: 'space-around',
+    paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.border,
+  },
+  stat: { alignItems: 'center', flex: 1 },
+  statValue: { fontSize: 24, fontWeight: 'bold', color: Colors.text },
+  statLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  statDivider: { width: 1, backgroundColor: Colors.border },
   section: { paddingHorizontal: 24, marginBottom: 20 },
   sectionTitle: {
     fontSize: 13, color: Colors.textSecondary, fontWeight: '600',
