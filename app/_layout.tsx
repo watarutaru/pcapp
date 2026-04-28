@@ -9,8 +9,8 @@ import * as Notifications from 'expo-notifications';
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
-  const notificationListener = useRef<Notifications.EventSubscription>();
-  const responseListener = useRef<Notifications.EventSubscription>();
+  const notificationListener = useRef<Notifications.EventSubscription | undefined>(undefined);
+  const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -21,8 +21,12 @@ export default function RootLayout() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session?.user) {
-        const token = await registerForPushNotifications();
-        if (token) await savePushToken(session.user.id, token);
+        try {
+          const token = await registerForPushNotifications();
+          if (token) await savePushToken(session.user.id, token);
+        } catch {
+          // push token 保存失敗はアプリ動作に影響しない
+        }
       }
     });
 

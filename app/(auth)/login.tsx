@@ -20,8 +20,8 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signIn(email, password);
-    } catch (e: any) {
-      Alert.alert('ログイン失敗', e.message);
+    } catch (e) {
+      Alert.alert('ログイン失敗', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }

@@ -26,8 +26,8 @@ export default function SignupScreen() {
     try {
       await signUp(email, password, nickname);
       Alert.alert('登録完了', '確認メールを送信しました。メールを確認してください。');
-    } catch (e: any) {
-      Alert.alert('登録失敗', e.message);
+    } catch (e) {
+      Alert.alert('登録失敗', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }

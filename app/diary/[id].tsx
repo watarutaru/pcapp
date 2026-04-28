@@ -66,7 +66,7 @@ export default function DiaryDetailScreen() {
           })}
         </Text>
 
-        <Text style={styles.content_text}>{diary.content}</Text>
+        <Text style={styles.contentText}>{diary.content}</Text>
       </ScrollView>
     </View>
   );
@@ -95,5 +95,5 @@ const styles = StyleSheet.create({
   authorEmoji: { fontSize: 18, marginRight: 8 },
   authorLabel: { fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   date: { color: Colors.textSecondary, fontSize: 13, marginBottom: 20 },
-  content_text: { color: Colors.text, fontSize: 16, lineHeight: 28 },
+  contentText: { color: Colors.text, fontSize: 16, lineHeight: 28 },
 });

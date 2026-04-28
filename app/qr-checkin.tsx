@@ -67,8 +67,8 @@ export default function QrCheckinScreen() {
         `${live.title}\n\n50ポイントを獲得しました！\n合計: ${profile?.total_points ?? '?'}pt`,
         [{ text: 'OK', onPress: () => router.back() }],
       );
-    } catch (e: any) {
-      Alert.alert('エラー', e.message, [
+    } catch (e) {
+      Alert.alert('エラー', e instanceof Error ? e.message : 'エラーが発生しました', [
         { text: 'OK', onPress: () => setScanned(false) },
       ]);
     } finally {

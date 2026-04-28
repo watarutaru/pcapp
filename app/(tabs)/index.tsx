@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '@/lib/supabase';
 import { getProfile } from '@/lib/profiles';
 import { Profile, STAGE_THRESHOLDS, Stage } from '@/lib/types';
@@ -25,26 +26,27 @@ const STAGE_COLORS: Record<Stage, string> = {
 
 export default function HomeScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setUserId(user.id);
-    const p = await getProfile(user.id);
-    setProfile(p);
-    setLoading(false);
-  }
+  const load = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const p = await getProfile(user.id);
+      setProfile(p);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (
@@ -111,9 +113,17 @@ export default function HomeScreen() {
           </View>
         )}
 
-        <Text style={styles.memberId}>
-          Member #{String(profile.user_id).slice(0, 8).toUpperCase()}
-        </Text>
+        <View style={styles.qrSection}>
+          <QRCode
+            value={profile.user_id}
+            size={160}
+            color={Colors.text}
+            backgroundColor={Colors.surface}
+          />
+          <Text style={styles.memberId}>
+            Member #{String(profile.user_id).slice(0, 8).toUpperCase()}
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -241,10 +251,17 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 3,
   },
+  qrSection: {
+    alignItems: 'center',
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
   memberId: {
     fontSize: 11,
     color: Colors.textSecondary,
-    textAlign: 'right',
+    textAlign: 'center',
     letterSpacing: 1,
+    marginTop: 12,
   },
 });
