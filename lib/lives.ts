@@ -20,6 +20,18 @@ export async function getLive(id: string): Promise<Live | null> {
   return data;
 }
 
+export async function getNextLive(): Promise<Live | null> {
+  const { data, error } = await supabase
+    .from('lives')
+    .select('*')
+    .gte('date', new Date().toISOString())
+    .order('date', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return data;
+}
+
 export async function getUserCheckins(userId: string): Promise<Checkin[]> {
   const { data, error } = await supabase
     .from('checkins')

@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, RefreshControl,
+  ActivityIndicator, TouchableOpacity,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { getProfile } from '@/lib/profiles';
-import { Profile, STAGE_THRESHOLDS, Stage } from '@/lib/types';
+import { getNextLive } from '@/lib/lives';
+import { Profile, STAGE_THRESHOLDS, Stage, Live, LiveCategory } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 
 const STAGE_LABELS: Record<Stage, string> = {
@@ -23,18 +26,29 @@ const STAGE_COLORS: Record<Stage, string> = {
   LEGEND: '#e94560',
 };
 
+const CATEGORY_ICON: Record<LiveCategory, string> = {
+  'ライブ': '🎸',
+  '配信': '📡',
+  'イベント': '🎪',
+  'グッズ': '👕',
+};
+
 export default function HomeScreen() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [nextLive, setNextLive] = useState<Live | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    setUserId(user.id);
-    const p = await getProfile(user.id);
+    const [p, live] = await Promise.all([
+      getProfile(user.id),
+      getNextLive(),
+    ]);
     setProfile(p);
+    setNextLive(live);
     setLoading(false);
   }
 
@@ -115,6 +129,44 @@ export default function HomeScreen() {
           Member #{String(profile.user_id).slice(0, 8).toUpperCase()}
         </Text>
       </View>
+
+      {/* 直近スケジュール */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>直近の予定</Text>
+      </View>
+
+      {nextLive ? (
+        <TouchableOpacity
+          style={styles.liveCard}
+          onPress={() => router.push(`/live/${nextLive.id}` as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.categoryIcon}>
+            {CATEGORY_ICON[nextLive.category] ?? '📅'}
+          </Text>
+          <View style={styles.liveInfo}>
+            <View style={styles.liveTitleRow}>
+              <Text style={styles.categoryLabel}>{nextLive.category}</Text>
+              <Text style={styles.liveTitle}>{nextLive.title}</Text>
+            </View>
+            <Text style={styles.liveDate}>
+              {new Date(nextLive.date).toLocaleDateString('ja-JP', {
+                year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
+              })}
+              {' '}
+              {new Date(nextLive.date).toLocaleTimeString('ja-JP', {
+                hour: '2-digit', minute: '2-digit',
+              })}
+            </Text>
+            <Text style={styles.liveVenue}>{nextLive.venue}</Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.emptyLive}>
+          <Text style={styles.emptyLiveText}>予定はありません</Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -246,5 +298,82 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'right',
     letterSpacing: 1,
+  },
+  sectionHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  liveCard: {
+    marginHorizontal: 24,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  categoryIcon: {
+    fontSize: 32,
+    marginRight: 14,
+  },
+  liveInfo: {
+    flex: 1,
+  },
+  liveTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  categoryLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.primary,
+    backgroundColor: Colors.border,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  liveTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.text,
+    flex: 1,
+  },
+  liveDate: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  liveVenue: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  chevron: {
+    fontSize: 22,
+    color: Colors.textSecondary,
+    marginLeft: 8,
+  },
+  emptyLive: {
+    marginHorizontal: 24,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyLiveText: {
+    color: Colors.textSecondary,
+    fontSize: 14,
   },
 });

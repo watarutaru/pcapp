@@ -1,7 +1,30 @@
-import { Tabs } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { Tabs, usePathname } from 'expo-router';
 import { Colors } from '@/constants/colors';
+import { checkLiveBadge, checkDiaryBadge, markViewed } from '@/lib/badges';
 
 export default function TabsLayout() {
+  const [liveBadge, setLiveBadge] = useState(false);
+  const [diaryBadge, setDiaryBadge] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    Promise.all([checkLiveBadge(), checkDiaryBadge()]).then(([live, diary]) => {
+      setLiveBadge(live);
+      setDiaryBadge(diary);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (pathname === '/live') {
+      setLiveBadge(false);
+      markViewed('live');
+    } else if (pathname === '/diary') {
+      setDiaryBadge(false);
+      markViewed('diary');
+    }
+  }, [pathname]);
+
   return (
     <Tabs
       screenOptions={{
@@ -20,11 +43,19 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="live"
-        options={{ title: 'ライブ', tabBarLabel: 'ライブ' }}
+        options={{
+          title: 'ライブ',
+          tabBarLabel: 'ライブ',
+          tabBarBadge: liveBadge ? '' : undefined,
+        }}
       />
       <Tabs.Screen
         name="diary"
-        options={{ title: '交換日記', tabBarLabel: '日記' }}
+        options={{
+          title: '交換日記',
+          tabBarLabel: '日記',
+          tabBarBadge: diaryBadge ? '' : undefined,
+        }}
       />
       <Tabs.Screen
         name="music"

@@ -38,11 +38,14 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+const VALID_CATEGORIES = ['ライブ', '配信', 'イベント', 'グッズ'];
+
 /**
  * #live-info 投稿フォーマット:
  * タイトル: ライブ名
  * 日時: YYYY-MM-DD HH:mm
  * 会場: 会場名
+ * カテゴリ: ライブ | 配信 | イベント | グッズ  （省略時: ライブ）
  * 詳細: 詳細テキスト（任意）
  */
 async function handleLiveInfo(message) {
@@ -61,6 +64,8 @@ async function handleLiveInfo(message) {
   const dateStr = parsed['日時'] || parsed['date'];
   const venue = parsed['会場'] || parsed['venue'];
   const description = parsed['詳細'] || parsed['description'] || '';
+  const rawCategory = parsed['カテゴリ'] || parsed['category'] || 'ライブ';
+  const category = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'ライブ';
 
   if (!title || !dateStr || !venue) {
     console.log('Live info message missing required fields, skipping.');
@@ -78,6 +83,7 @@ async function handleLiveInfo(message) {
     date: date.toISOString(),
     venue,
     description,
+    category,
   });
 
   if (error) {

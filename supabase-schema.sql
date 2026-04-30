@@ -20,8 +20,12 @@ create table if not exists lives (
   date timestamptz not null,
   venue text not null,
   description text,
+  category text not null default 'ライブ' check (category in ('ライブ', '配信', 'イベント', 'グッズ')),
   created_at timestamptz not null default now()
 );
+
+-- migration: add category to existing lives table
+-- alter table lives add column if not exists category text not null default 'ライブ' check (category in ('ライブ', '配信', 'イベント', 'グッズ'));
 alter table lives enable row level security;
 create policy "Anyone can view lives" on lives for select using (true);
 
