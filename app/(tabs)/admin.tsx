@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
-  ScrollView, Modal,
+  ScrollView,
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
-import { supabase } from '@/lib/supabase';
 import { getLives, checkinToLive } from '@/lib/lives';
 import { addPoints, getProfile } from '@/lib/profiles';
 import { Live } from '@/lib/types';
@@ -59,12 +58,23 @@ export default function AdminScreen() {
     if (!scannedUserId) return;
     setProcessing(true);
     try {
-      await checkinToLive(scannedUserId, live.id);
-      await addPoints(scannedUserId, 50, `ライブ参戦: ${live.title}`);
       const profile = await getProfile(scannedUserId);
+      const isNew = await checkinToLive(scannedUserId, live.id);
+
+      if (!isNew) {
+        Alert.alert(
+          'チェックイン済み',
+          `${profile?.nickname ?? '会員'} はすでに\n${live.title}\nにチェックイン済みです`,
+          [{ text: 'OK', onPress: () => resetScan() }],
+        );
+        return;
+      }
+
+      await addPoints(scannedUserId, 50, `ライブ参戦: ${live.title}`);
+      const updatedProfile = await getProfile(scannedUserId);
       Alert.alert(
         'チェックイン完了！',
-        `${profile?.nickname ?? '会員'}\n\n${live.title}\n50ポイントを付与しました\n合計: ${profile?.total_points ?? '?'}pt`,
+        `${updatedProfile?.nickname ?? '会員'}\n\n${live.title}\n50ポイントを付与しました\n合計: ${updatedProfile?.total_points ?? '?'}pt`,
         [{ text: 'OK', onPress: () => resetScan() }],
       );
     } catch (e) {

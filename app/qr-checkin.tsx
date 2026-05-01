@@ -57,9 +57,18 @@ export default function QrCheckinScreen() {
         return;
       }
 
-      await checkinToLive(user.id, liveId);
-      await addPoints(user.id, 50, `ライブ参戦: ${live.title}`);
+      const isNew = await checkinToLive(user.id, liveId);
 
+      if (!isNew) {
+        Alert.alert(
+          'チェックイン済み',
+          `${live.title}\n\nすでにこのライブに参戦記録があります`,
+          [{ text: 'OK', onPress: () => router.back() }],
+        );
+        return;
+      }
+
+      await addPoints(user.id, 50, `ライブ参戦: ${live.title}`);
       const profile = await getProfile(user.id);
 
       Alert.alert(
