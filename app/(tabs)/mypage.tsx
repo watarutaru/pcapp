@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Alert,
+  RefreshControl, ActivityIndicator, Alert, Modal, TextInput,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { getProfile, getPointHistory } from '@/lib/profiles';
+import { getProfile, getPointHistory, updateProfile } from '@/lib/profiles';
 import { signOut } from '@/lib/auth';
 import { Profile, Point, Stage } from '@/lib/types';
 import { Colors } from '@/constants/colors';
@@ -22,6 +23,9 @@ export default function MyPageScreen() {
   const [points, setPoints] = useState<Point[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editNickname, setEditNickname] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -46,6 +50,32 @@ export default function MyPageScreen() {
 
   useEffect(() => { load(); }, [load]);
 
+  function openEditModal() {
+    setEditNickname(profile?.nickname ?? '');
+    setEditModalVisible(true);
+  }
+
+  async function handleSaveNickname() {
+    const trimmed = editNickname.trim();
+    if (!trimmed) {
+      Alert.alert('エラー', 'ニックネームを入力してください');
+      return;
+    }
+    if (!profile) return;
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await updateProfile(user.id, { nickname: trimmed });
+      setProfile({ ...profile, nickname: trimmed });
+      setEditModalVisible(false);
+    } catch (e) {
+      Alert.alert('エラー', e instanceof Error ? e.message : 'エラーが発生しました');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleSignOut() {
     Alert.alert('ログアウト', 'ログアウトしますか？', [
       { text: 'キャンセル', style: 'cancel' },
@@ -59,7 +89,6 @@ export default function MyPageScreen() {
     ]);
   }
 
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -69,61 +98,107 @@ export default function MyPageScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>マイページ</Text>
-      </View>
-
-      {profile && (
-        <View style={styles.profileCard}>
-          <View style={styles.profileCardHeader}>
-            <Text style={styles.nickname}>{profile.nickname}</Text>
-            <Text style={styles.stageBadge}>
-              {STAGE_LABELS[profile.stage as Stage]}
-            </Text>
-          </View>
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{profile.total_points}</Text>
-              <Text style={styles.statLabel}>ポイント</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{profile.visit_count}</Text>
-              <Text style={styles.statLabel}>参戦回数</Text>
-            </View>
-          </View>
+    <>
+      <ScrollView
+        style={styles.container}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>マイページ</Text>
         </View>
-      )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>ポイント履歴</Text>
-        {points.length === 0 ? (
-          <Text style={styles.emptyText}>ポイント履歴はありません</Text>
-        ) : (
-          points.map(p => (
-            <View key={p.id} style={styles.pointRow}>
-              <View style={styles.pointInfo}>
-                <Text style={styles.pointReason}>{p.reason}</Text>
-                <Text style={styles.pointDate}>
-                  {new Date(p.created_at).toLocaleDateString('ja-JP')}
-                </Text>
+        {profile && (
+          <View style={styles.profileCard}>
+            <View style={styles.profileCardHeader}>
+              <View style={styles.nicknameRow}>
+                <Text style={styles.nickname}>{profile.nickname}</Text>
+                <TouchableOpacity onPress={openEditModal} style={styles.editBtn}>
+                  <Text style={styles.editBtnText}>編集</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.pointAmount}>+{p.amount}pt</Text>
+              <Text style={styles.stageBadge}>
+                {STAGE_LABELS[profile.stage as Stage]}
+              </Text>
             </View>
-          ))
+            <View style={styles.statsRow}>
+              <View style={styles.stat}>
+                <Text style={styles.statValue}>{profile.total_points}</Text>
+                <Text style={styles.statLabel}>ポイント</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.stat}>
+                <Text style={styles.statValue}>{profile.visit_count}</Text>
+                <Text style={styles.statLabel}>参戦回数</Text>
+              </View>
+            </View>
+          </View>
         )}
-      </View>
 
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>ログアウト</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>ポイント履歴</Text>
+          {points.length === 0 ? (
+            <Text style={styles.emptyText}>ポイント履歴はありません</Text>
+          ) : (
+            points.map(p => (
+              <View key={p.id} style={styles.pointRow}>
+                <View style={styles.pointInfo}>
+                  <Text style={styles.pointReason}>{p.reason}</Text>
+                  <Text style={styles.pointDate}>
+                    {new Date(p.created_at).toLocaleDateString('ja-JP')}
+                  </Text>
+                </View>
+                <Text style={styles.pointAmount}>+{p.amount}pt</Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <Text style={styles.signOutText}>ログアウト</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      <Modal visible={editModalVisible} transparent animationType="fade">
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>ニックネームを変更</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editNickname}
+              onChangeText={setEditNickname}
+              placeholder="ニックネーム"
+              placeholderTextColor={Colors.textSecondary}
+              autoFocus
+              maxLength={20}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancel}
+                onPress={() => setEditModalVisible(false)}
+                disabled={saving}
+              >
+                <Text style={styles.modalCancelText}>キャンセル</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSave}
+                onPress={handleSaveNickname}
+                disabled={saving}
+              >
+                {saving
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={styles.modalSaveText}>保存</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 }
 
@@ -142,8 +217,39 @@ const styles = StyleSheet.create({
   profileCardHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
   },
+  nicknameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   nickname: { fontSize: 20, fontWeight: 'bold', color: Colors.text },
+  editBtn: {
+    borderWidth: 1, borderColor: Colors.border, borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 2,
+  },
+  editBtnText: { fontSize: 12, color: Colors.textSecondary },
   stageBadge: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  modalOverlay: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  modalBox: {
+    width: '80%', backgroundColor: Colors.surface, borderRadius: 20,
+    padding: 24,
+  },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.text, marginBottom: 16 },
+  modalInput: {
+    borderWidth: 1, borderColor: Colors.border, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 12,
+    fontSize: 16, color: Colors.text, marginBottom: 20,
+  },
+  modalButtons: { flexDirection: 'row', gap: 12 },
+  modalCancel: {
+    flex: 1, borderWidth: 1, borderColor: Colors.border, borderRadius: 12,
+    paddingVertical: 12, alignItems: 'center',
+  },
+  modalCancelText: { color: Colors.textSecondary, fontSize: 15 },
+  modalSave: {
+    flex: 1, backgroundColor: Colors.primary, borderRadius: 12,
+    paddingVertical: 12, alignItems: 'center',
+  },
+  modalSaveText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   statsRow: {
     flexDirection: 'row', justifyContent: 'space-around',
     paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.border,
