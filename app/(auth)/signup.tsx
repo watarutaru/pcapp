@@ -25,7 +25,8 @@ export default function SignupScreen() {
       await sendMagicLink(email, nickname);
       setSent(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'エラーが発生しました');
+      const msg = e instanceof Error ? e.message : '';
+      setError(msg || 'メール送信に失敗しました。時間をおいて再度お試しください。');
     } finally {
       setLoading(false);
     }
