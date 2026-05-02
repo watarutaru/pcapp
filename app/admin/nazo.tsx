@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Image,
+  TextInput, Alert, ActivityIndicator, Image, Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -26,6 +26,7 @@ export default function AdminNazoScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageMime, setImageMime] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     setNazos(await getPcNazos());
@@ -37,7 +38,7 @@ export default function AdminNazoScreen() {
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('権限エラー', 'カメラロールへのアクセスを許可してください');
+      setError('カメラロールへのアクセスを許可してください');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -51,16 +52,17 @@ export default function AdminNazoScreen() {
   }
 
   async function handleSave() {
+    setError('');
     if (!form.title.trim() || !form.date.trim() || !form.body.trim()) {
-      Alert.alert('入力エラー', 'タイトル・日付・本文は必須です');
+      setError('タイトル・日付・本文は必須です');
       return;
     }
     if (!imageUri) {
-      Alert.alert('入力エラー', '画像を選択してください');
+      setError('画像を選択してください');
       return;
     }
     if (!form.answersRaw.trim() || !form.answerDisplay.trim()) {
-      Alert.alert('入力エラー', '正解リストと表示用正解は必須です');
+      setError('正解リストと表示用正解は必須です');
       return;
     }
 
@@ -81,26 +83,37 @@ export default function AdminNazoScreen() {
       setMode('list');
       await load();
     } catch (e) {
-      Alert.alert('エラー', e instanceof Error ? e.message : '保存に失敗しました');
+      const msg = e instanceof Error ? e.message : '';
+      setError(msg || '保存に失敗しました');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(nazo: PcNazo) {
-    Alert.alert('削除確認', `「${nazo.title}」を削除しますか？`, [
-      { text: 'キャンセル', style: 'cancel' },
-      {
-        text: '削除', style: 'destructive', onPress: async () => {
-          try {
-            await deletePcNazo(nazo.id);
-            await load();
-          } catch {
-            Alert.alert('エラー', '削除に失敗しました');
-          }
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`「${nazo.title}」を削除しますか？`)) return;
+      try {
+        await deletePcNazo(nazo.id);
+        await load();
+      } catch {
+        alert('削除に失敗しました');
+      }
+    } else {
+      Alert.alert('削除確認', `「${nazo.title}」を削除しますか？`, [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除', style: 'destructive', onPress: async () => {
+            try {
+              await deletePcNazo(nazo.id);
+              await load();
+            } catch {
+              Alert.alert('エラー', '削除に失敗しました');
+            }
+          },
         },
-      },
-    ]);
+      ]);
+    }
   }
 
   if (loading) {
@@ -111,7 +124,7 @@ export default function AdminNazoScreen() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => { setMode('list'); setImageUri(null); setForm(INIT_FORM); }} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => { setMode('list'); setImageUri(null); setForm(INIT_FORM); setError(''); }} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← 戻る</Text>
           </TouchableOpacity>
           <Text style={styles.title}>PC謎追加</Text>
@@ -161,6 +174,8 @@ export default function AdminNazoScreen() {
             />
           </Field>
         </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
           style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
@@ -279,6 +294,7 @@ const styles = StyleSheet.create({
   imagePreview: { width: '100%', height: '100%' },
   imageClearBtn: { marginTop: 8, alignSelf: 'flex-start' },
   imageClearText: { color: Colors.primary, fontSize: 13 },
+  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 24, marginTop: 12 },
   saveBtn: {
     marginHorizontal: 24, marginTop: 24,
     backgroundColor: Colors.primary, borderRadius: 14,

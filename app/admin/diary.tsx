@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDiaries, createDiary, deleteDiary } from '@/lib/diaries';
@@ -21,6 +21,7 @@ export default function AdminDiaryScreen() {
   const [author, setAuthor] = useState<'wataru' | 'tamaru'>('wataru');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     setDiaries(await getDiaries());
@@ -30,8 +31,9 @@ export default function AdminDiaryScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   async function handleSave() {
+    setError('');
     if (!content.trim()) {
-      Alert.alert('入力エラー', '本文を入力してください');
+      setError('本文を入力してください');
       return;
     }
     setSaving(true);
@@ -41,7 +43,8 @@ export default function AdminDiaryScreen() {
       setMode('list');
       await load();
     } catch (e) {
-      Alert.alert('エラー', '保存に失敗しました');
+      const msg = e instanceof Error ? e.message : '';
+      setError(msg || '保存に失敗しました');
     } finally {
       setSaving(false);
     }
@@ -50,19 +53,29 @@ export default function AdminDiaryScreen() {
   async function handleDelete(diary: Diary) {
     const config = AUTHOR_CONFIG[diary.author];
     const preview = diary.content.slice(0, 20) + (diary.content.length > 20 ? '...' : '');
-    Alert.alert('削除確認', `${config.label}の「${preview}」を削除しますか？`, [
-      { text: 'キャンセル', style: 'cancel' },
-      {
-        text: '削除', style: 'destructive', onPress: async () => {
-          try {
-            await deleteDiary(diary.id);
-            await load();
-          } catch {
-            Alert.alert('エラー', '削除に失敗しました');
-          }
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`${config.label}の「${preview}」を削除しますか？`)) return;
+      try {
+        await deleteDiary(diary.id);
+        await load();
+      } catch {
+        alert('削除に失敗しました');
+      }
+    } else {
+      Alert.alert('削除確認', `${config.label}の「${preview}」を削除しますか？`, [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除', style: 'destructive', onPress: async () => {
+            try {
+              await deleteDiary(diary.id);
+              await load();
+            } catch {
+              Alert.alert('エラー', '削除に失敗しました');
+            }
+          },
         },
-      },
-    ]);
+      ]);
+    }
   }
 
   if (loading) {
@@ -73,7 +86,7 @@ export default function AdminDiaryScreen() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setMode('list')} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => { setMode('list'); setError(''); }} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← 戻る</Text>
           </TouchableOpacity>
           <Text style={styles.title}>日記追加</Text>
@@ -114,6 +127,8 @@ export default function AdminDiaryScreen() {
             />
           </View>
         </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
           style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
@@ -210,6 +225,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12,
   },
   inputMulti: { height: 180, textAlignVertical: 'top' },
+  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 24, marginTop: 12 },
   saveBtn: {
     marginHorizontal: 24, marginTop: 24,
     backgroundColor: Colors.primary, borderRadius: 14,
