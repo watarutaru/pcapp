@@ -1,10 +1,15 @@
+import { Platform } from 'react-native';
 import { supabase } from './supabase';
+
+const REDIRECT_URL = Platform.OS === 'web'
+  ? 'https://pcapp-preview.netlify.app'
+  : 'pcapp://';
 
 export async function sendMagicLink(email: string, nickname?: string) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: 'pcapp://',
+      emailRedirectTo: REDIRECT_URL,
       ...(nickname && { data: { nickname } }),
     },
   });
