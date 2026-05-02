@@ -32,3 +32,14 @@ export async function checkDiaryBadge(): Promise<boolean> {
     .limit(1);
   return (data?.length ?? 0) > 0;
 }
+
+export async function checkNazoBadge(): Promise<boolean> {
+  const last = await getLastViewed('nazo');
+  if (!last) return false;
+  const { data } = await supabase
+    .from('pc_nazo')
+    .select('id')
+    .gt('created_at', last)
+    .limit(1);
+  return (data?.length ?? 0) > 0;
+}

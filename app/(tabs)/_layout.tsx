@@ -3,18 +3,20 @@ import { Tabs, usePathname } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { getProfile } from '@/lib/profiles';
 import { Colors } from '@/constants/colors';
-import { checkLiveBadge, checkDiaryBadge, markViewed } from '@/lib/badges';
+import { checkLiveBadge, checkDiaryBadge, checkNazoBadge, markViewed } from '@/lib/badges';
 
 export default function TabsLayout() {
   const [liveBadge, setLiveBadge] = useState(false);
   const [diaryBadge, setDiaryBadge] = useState(false);
+  const [nazoBadge, setNazoBadge] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    Promise.all([checkLiveBadge(), checkDiaryBadge()]).then(([live, diary]) => {
+    Promise.all([checkLiveBadge(), checkDiaryBadge(), checkNazoBadge()]).then(([live, diary, nazo]) => {
       setLiveBadge(live);
       setDiaryBadge(diary);
+      setNazoBadge(nazo);
     });
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -31,6 +33,9 @@ export default function TabsLayout() {
     } else if (pathname === '/diary') {
       setDiaryBadge(false);
       markViewed('diary');
+    } else if (pathname === '/nazo') {
+      setNazoBadge(false);
+      markViewed('nazo');
     }
   }, [pathname]);
 
@@ -64,6 +69,14 @@ export default function TabsLayout() {
           title: '交換日記',
           tabBarLabel: '日記',
           tabBarBadge: diaryBadge ? '' : undefined,
+        }}
+      />
+      <Tabs.Screen
+        name="nazo"
+        options={{
+          title: 'PC謎',
+          tabBarLabel: 'PC謎',
+          tabBarBadge: nazoBadge ? '' : undefined,
         }}
       />
       <Tabs.Screen

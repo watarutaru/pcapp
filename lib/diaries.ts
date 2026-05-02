@@ -19,3 +19,14 @@ export async function getDiary(id: string): Promise<Diary | null> {
   if (error) return null;
   return data;
 }
+
+export async function createDiary(author: 'wataru' | 'tamaru', content: string): Promise<void> {
+  const { error } = await supabase.from('diaries').insert({ author, content });
+  if (error) throw error;
+}
+
+export async function deleteDiary(id: string): Promise<void> {
+  const { error } = await supabase.from('diaries').delete().eq('id', id);
+  if (error) throw error;
+}
+
