@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { registerForPushNotifications, savePushToken } from '@/lib/notifications';
@@ -23,6 +23,8 @@ export default function RootLayout() {
   const [initialized, setInitialized] = useState(false);
   const notificationListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     async function initialize() {
@@ -82,18 +84,26 @@ export default function RootLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!initialized) return;
+    const inAuthGroup = segments[0] === '(auth)';
+    if (session && inAuthGroup) {
+      router.replace('/(tabs)' as any);
+    } else if (!session && !inAuthGroup) {
+      router.replace('/(auth)/login' as any);
+    }
+  }, [session, initialized, segments]);
+
   if (!initialized) return null;
 
   return (
     <>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false }}>
-        {session ? (
-          <Stack.Screen name="(tabs)" />
-        ) : (
-          <Stack.Screen name="(auth)" />
-        )}
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
       </Stack>
     </>
   );
 }
+
