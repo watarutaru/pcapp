@@ -21,8 +21,8 @@ export default function LoginScreen() {
     try {
       await sendMagicLink(email);
       setSent(true);
-    } catch (e: any) {
-      Alert.alert('送信失敗', e.message);
+    } catch (e) {
+      Alert.alert('送信失敗', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }

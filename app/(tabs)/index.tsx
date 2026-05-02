@@ -4,6 +4,7 @@ import {
   ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '@/lib/supabase';
 import { getProfile } from '@/lib/profiles';
 import { getNextLive } from '@/lib/lives';
@@ -40,25 +41,28 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const [p, live] = await Promise.all([
-      getProfile(user.id),
-      getNextLive(),
-    ]);
-    setProfile(p);
-    setNextLive(live);
-    setLoading(false);
-  }
+  const load = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const [p, live] = await Promise.all([
+        getProfile(user.id),
+        getNextLive(),
+      ]);
+      setProfile(p);
+      setNextLive(live);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (
@@ -125,9 +129,17 @@ export default function HomeScreen() {
           </View>
         )}
 
-        <Text style={styles.memberId}>
-          Member #{String(profile.user_id).slice(0, 8).toUpperCase()}
-        </Text>
+        <View style={styles.qrSection}>
+          <QRCode
+            value={profile.user_id}
+            size={160}
+            color={Colors.text}
+            backgroundColor={Colors.surface}
+          />
+          <Text style={styles.memberId}>
+            Member #{String(profile.user_id).slice(0, 8).toUpperCase()}
+          </Text>
+        </View>
       </View>
 
       {/* 直近スケジュール */}
@@ -293,11 +305,18 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 3,
   },
+  qrSection: {
+    alignItems: 'center',
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
   memberId: {
     fontSize: 11,
     color: Colors.textSecondary,
-    textAlign: 'right',
+    textAlign: 'center',
     letterSpacing: 1,
+    marginTop: 12,
   },
   sectionHeader: {
     paddingHorizontal: 24,

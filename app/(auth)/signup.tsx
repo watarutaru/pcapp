@@ -22,8 +22,8 @@ export default function SignupScreen() {
     try {
       await sendMagicLink(email, nickname);
       setSent(true);
-    } catch (e: any) {
-      Alert.alert('登録失敗', e.message);
+    } catch (e) {
+      Alert.alert('登録失敗', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }

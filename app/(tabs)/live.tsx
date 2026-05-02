@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { getLives, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live, LiveCategory } from '@/lib/types';
@@ -23,7 +23,7 @@ export default function LiveScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const [livesData, { data: { user } }] = await Promise.all([
       getLives(),
       supabase.auth.getUser(),
@@ -34,15 +34,15 @@ export default function LiveScreen() {
       setCheckedInIds(new Set(checkins.map(c => c.live_id)));
     }
     setLoading(false);
-  }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  }, []);
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   if (loading) {
     return (

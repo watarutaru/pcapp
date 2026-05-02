@@ -2,6 +2,7 @@ export interface Profile {
   id: string;
   user_id: string;
   nickname: string;
+  role: 'member' | 'admin';
   stage: string;
   total_points: number;
   visit_count: number;

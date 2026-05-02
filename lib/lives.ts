@@ -41,7 +41,8 @@ export async function getUserCheckins(userId: string): Promise<Checkin[]> {
   return data;
 }
 
-export async function checkinToLive(userId: string, liveId: string): Promise<void> {
+/** 新規チェックインなら true、既にチェックイン済みなら false を返す */
+export async function checkinToLive(userId: string, liveId: string): Promise<boolean> {
   const { data: existing } = await supabase
     .from('checkins')
     .select('id')
@@ -49,11 +50,12 @@ export async function checkinToLive(userId: string, liveId: string): Promise<voi
     .eq('live_id', liveId)
     .single();
 
-  if (existing) throw new Error('すでにチェックイン済みです');
+  if (existing) return false;
 
   const { error } = await supabase.from('checkins').insert({
     user_id: userId,
     live_id: liveId,
   });
   if (error) throw error;
+  return true;
 }

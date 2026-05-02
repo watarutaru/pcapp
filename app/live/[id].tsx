@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getLive, checkinToLive, getUserCheckins } from '@/lib/lives';
-import { addPoints } from '@/lib/profiles';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { getLive, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
@@ -14,11 +13,9 @@ export default function LiveDetailScreen() {
   const router = useRouter();
   const [live, setLive] = useState<Live | null>(null);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [checking, setChecking] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     async function load() {
       const [liveData, { data: { user } }] = await Promise.all([
         getLive(id),
@@ -26,29 +23,13 @@ export default function LiveDetailScreen() {
       ]);
       setLive(liveData);
       if (user) {
-        setUserId(user.id);
         const checkins = await getUserCheckins(user.id);
         setIsCheckedIn(checkins.some(c => c.live_id === id));
       }
       setLoading(false);
     }
     load();
-  }, [id]);
-
-  async function handleCheckin() {
-    if (!userId || !live) return;
-    setChecking(true);
-    try {
-      await checkinToLive(userId, live.id);
-      await addPoints(userId, 50, `ライブ参戦: ${live.title}`);
-      setIsCheckedIn(true);
-      Alert.alert('チェックイン完了！', '50ポイントを獲得しました！🎉');
-    } catch (e: any) {
-      Alert.alert('エラー', e.message);
-    } finally {
-      setChecking(false);
-    }
-  }
+  }, [id]));
 
   if (loading) {
     return (
@@ -103,12 +84,8 @@ export default function LiveDetailScreen() {
             <Text style={styles.checkedButtonText}>✓ 参戦済み</Text>
           </View>
         ) : (
-          <TouchableOpacity style={styles.checkinButton} onPress={handleCheckin} disabled={checking}>
-            {checking ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.checkinButtonText}>チェックイン（+50pt）</Text>
-            )}
+          <TouchableOpacity style={styles.checkinButton} onPress={() => router.push('/qr-checkin' as any)}>
+            <Text style={styles.checkinButtonText}>📷 QRコードでチェックイン（+50pt）</Text>
           </TouchableOpacity>
         )}
       </View>
