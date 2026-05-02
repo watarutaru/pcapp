@@ -5,6 +5,18 @@ import { supabase } from '@/lib/supabase';
 import { registerForPushNotifications, savePushToken } from '@/lib/notifications';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
+
+async function handleAuthUrl(url: string) {
+  const fragment = url.split('#')[1];
+  if (!fragment) return;
+  const params = new URLSearchParams(fragment);
+  const access_token = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+  if (access_token && refresh_token) {
+    await supabase.auth.setSession({ access_token, refresh_token });
+  }
+}
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -13,12 +25,20 @@ export default function RootLayout() {
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function initialize() {
+      const url = await Linking.getInitialURL();
+      if (url) await handleAuthUrl(url);
+
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setInitialized(true);
-    });
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    initialize();
+
+    const linkingSub = Linking.addEventListener('url', ({ url }) => handleAuthUrl(url));
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (session?.user) {
         try {
@@ -27,6 +47,27 @@ export default function RootLayout() {
         } catch {
           // push token 保存失敗はアプリ動作に影響しない
         }
+
+        if (event === 'SIGNED_IN') {
+          const { data: existing } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (!existing) {
+            const nickname = session.user.user_metadata?.nickname
+              || session.user.email?.split('@')[0]
+              || 'ファン';
+            await supabase.from('profiles').insert({
+              user_id: session.user.id,
+              nickname,
+              stage: 'ROOKIE',
+              total_points: 0,
+              visit_count: 0,
+            });
+          }
+        }
       }
     });
 
@@ -34,6 +75,7 @@ export default function RootLayout() {
     responseListener.current = Notifications.addNotificationResponseReceivedListener(() => {});
 
     return () => {
+      linkingSub.remove();
       subscription.unsubscribe();
       notificationListener.current?.remove();
       responseListener.current?.remove();

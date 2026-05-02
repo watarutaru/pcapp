@@ -4,27 +4,41 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { signIn } from '@/lib/auth';
+import { sendMagicLink } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
+    if (!email) {
+      Alert.alert('エラー', 'メールアドレスを入力してください');
       return;
     }
     setLoading(true);
     try {
-      await signIn(email, password);
+      await sendMagicLink(email);
+      setSent(true);
     } catch (e) {
-      Alert.alert('ログイン失敗', e instanceof Error ? e.message : 'エラーが発生しました');
+      Alert.alert('送信失敗', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
+  }
+
+  if (sent) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
+        <Text style={styles.title}>メールを確認してください</Text>
+        <Text style={styles.description}>
+          {email} にログインリンクを送信しました。{'\n'}
+          メール内のリンクをタップしてログインできます。
+        </Text>
+      </View>
+    );
   }
 
   return (
@@ -45,20 +59,12 @@ export default function LoginScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="パスワード"
-          placeholderTextColor={Colors.textSecondary}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>ログイン</Text>
+            <Text style={styles.buttonText}>ログインリンクを送信</Text>
           )}
         </TouchableOpacity>
 
@@ -77,6 +83,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    paddingHorizontal: 32,
+    gap: 16,
+  },
   inner: {
     flex: 1,
     justifyContent: 'center',
@@ -94,6 +108,12 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 40,
+  },
+  description: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
   input: {
     backgroundColor: Colors.surface,

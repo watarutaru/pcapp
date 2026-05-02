@@ -9,12 +9,15 @@ export interface Profile {
   created_at: string;
 }
 
+export type LiveCategory = 'ライブ' | '配信' | 'イベント' | 'グッズ';
+
 export interface Live {
   id: string;
   title: string;
   date: string;
   venue: string;
   description: string;
+  category: LiveCategory;
   created_at: string;
 }
 

@@ -6,7 +6,14 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getLives, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
-import { Live } from '@/lib/types';
+import { Live, LiveCategory } from '@/lib/types';
+
+const CATEGORY_ICON: Record<LiveCategory, string> = {
+  'ライブ': '🎸',
+  '配信': '📡',
+  'イベント': '🎪',
+  'グッズ': '👕',
+};
 import { Colors } from '@/constants/colors';
 
 export default function LiveScreen() {
@@ -61,6 +68,9 @@ export default function LiveScreen() {
             onPress={() => router.push(`/live/${item.id}` as any)}
           >
             <View style={styles.dateContainer}>
+              <Text style={styles.categoryIcon}>
+                {CATEGORY_ICON[item.category] ?? '📅'}
+              </Text>
               <Text style={styles.dateMonth}>
                 {new Date(item.date).toLocaleDateString('ja-JP', { month: 'short' })}
               </Text>
@@ -131,6 +141,10 @@ const styles = StyleSheet.create({
     width: 48,
     alignItems: 'center',
     marginRight: 16,
+  },
+  categoryIcon: {
+    fontSize: 20,
+    marginBottom: 2,
   },
   dateMonth: {
     fontSize: 11,
