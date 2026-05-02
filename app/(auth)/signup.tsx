@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { sendMagicLink } from '@/lib/auth';
@@ -12,10 +12,12 @@ export default function SignupScreen() {
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleSignup() {
+    setError('');
     if (!email || !nickname) {
-      Alert.alert('エラー', 'すべての項目を入力してください');
+      setError('すべての項目を入力してください');
       return;
     }
     setLoading(true);
@@ -23,7 +25,7 @@ export default function SignupScreen() {
       await sendMagicLink(email, nickname);
       setSent(true);
     } catch (e) {
-      Alert.alert('登録失敗', e instanceof Error ? e.message : 'エラーが発生しました');
+      setError(e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
@@ -75,6 +77,8 @@ export default function SignupScreen() {
             <Text style={styles.buttonText}>登録してログイン</Text>
           )}
         </TouchableOpacity>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <Link href="/(auth)/login" asChild>
           <TouchableOpacity style={styles.linkButton}>
@@ -153,5 +157,11 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.textSecondary,
     fontSize: 14,
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
   },
 });
