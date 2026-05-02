@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { Platform } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -28,17 +29,24 @@ export default function RootLayout() {
 
   useEffect(() => {
     async function initialize() {
-      const url = await Linking.getInitialURL();
-      if (url) await handleAuthUrl(url);
-
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setInitialized(true);
+      try {
+        // Web では detectSessionInUrl: true が自動でトークンを処理するため不要
+        if (Platform.OS !== 'web') {
+          const url = await Linking.getInitialURL();
+          if (url) await handleAuthUrl(url);
+        }
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+      } finally {
+        setInitialized(true);
+      }
     }
 
     initialize();
 
-    const linkingSub = Linking.addEventListener('url', ({ url }) => handleAuthUrl(url));
+    const linkingSub = Linking.addEventListener('url', ({ url }) => {
+      if (Platform.OS !== 'web') handleAuthUrl(url);
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
