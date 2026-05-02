@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getLives, createLive, deleteLive } from '@/lib/lives';
@@ -19,6 +19,7 @@ export default function AdminLiveScreen() {
   const [mode, setMode] = useState<'list' | 'form'>('list');
   const [form, setForm] = useState(INIT_FORM);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     setLives(await getLives());
@@ -28,12 +29,13 @@ export default function AdminLiveScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   async function handleSave() {
+    setError('');
     if (!form.title.trim() || !form.date.trim() || !form.venue.trim()) {
-      Alert.alert('入力エラー', 'タイトル・日時・会場は必須です');
+      setError('タイトル・日時・会場は必須です');
       return;
     }
     if (isNaN(new Date(form.date).getTime())) {
-      Alert.alert('入力エラー', '日時の形式が正しくありません\n例: 2026-05-01 18:00');
+      setError('日時の形式が正しくありません（例: 2026-05-01 18:00）');
       return;
     }
     setSaving(true);
@@ -43,26 +45,37 @@ export default function AdminLiveScreen() {
       setMode('list');
       await load();
     } catch (e) {
-      Alert.alert('エラー', e instanceof Error ? e.message : '保存に失敗しました');
+      const msg = e instanceof Error ? e.message : '';
+      setError(msg || '保存に失敗しました');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(live: Live) {
-    Alert.alert('削除確認', `「${live.title}」を削除しますか？`, [
-      { text: 'キャンセル', style: 'cancel' },
-      {
-        text: '削除', style: 'destructive', onPress: async () => {
-          try {
-            await deleteLive(live.id);
-            await load();
-          } catch (e) {
-            Alert.alert('エラー', '削除に失敗しました');
-          }
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`「${live.title}」を削除しますか？`)) return;
+      try {
+        await deleteLive(live.id);
+        await load();
+      } catch {
+        alert('削除に失敗しました');
+      }
+    } else {
+      Alert.alert('削除確認', `「${live.title}」を削除しますか？`, [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除', style: 'destructive', onPress: async () => {
+            try {
+              await deleteLive(live.id);
+              await load();
+            } catch {
+              Alert.alert('エラー', '削除に失敗しました');
+            }
+          },
         },
-      },
-    ]);
+      ]);
+    }
   }
 
   if (loading) {
@@ -73,7 +86,7 @@ export default function AdminLiveScreen() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setMode('list')} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => { setMode('list'); setError(''); }} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← 戻る</Text>
           </TouchableOpacity>
           <Text style={styles.title}>ライブ追加</Text>
@@ -114,6 +127,8 @@ export default function AdminLiveScreen() {
             />
           </Field>
         </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
           style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
@@ -213,6 +228,7 @@ const styles = StyleSheet.create({
   catBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   catBtnText: { color: Colors.textSecondary, fontSize: 14 },
   catBtnTextActive: { color: '#fff', fontWeight: '700' },
+  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 24, marginTop: 12 },
   saveBtn: {
     marginHorizontal: 24, marginTop: 24,
     backgroundColor: Colors.primary, borderRadius: 14,
