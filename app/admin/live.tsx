@@ -241,21 +241,6 @@ export default function AdminLiveScreen() {
 }
 
 function DateInput({ value, onChange, style }: { value: string; onChange: (v: string) => void; style: object }) {
-  if (Platform.OS === 'web') {
-    return (
-      <input
-        type="date"
-        value={value}
-        onChange={e => onChange((e as any).target.value)}
-        style={{
-          flex: 1, backgroundColor: Colors.background, borderRadius: 10,
-          border: `1px solid ${Colors.border}`, color: Colors.text,
-          fontSize: 15, padding: '12px 14px', outline: 'none',
-          ...style as any,
-        } as React.CSSProperties}
-      />
-    );
-  }
   return (
     <TextInput
       style={[styles.input, style]}
@@ -263,33 +248,20 @@ function DateInput({ value, onChange, style }: { value: string; onChange: (v: st
       onChangeText={onChange}
       placeholder="YYYY-MM-DD"
       placeholderTextColor={Colors.textSecondary}
+      {...(Platform.OS === 'web' ? { type: 'date' } as any : {})}
     />
   );
 }
 
 function TimeInput({ value, onChange, style }: { value: string; onChange: (v: string) => void; style: object }) {
-  if (Platform.OS === 'web') {
-    return (
-      <input
-        type="time"
-        value={value}
-        onChange={e => onChange((e as any).target.value)}
-        style={{
-          flex: 1, backgroundColor: Colors.background, borderRadius: 10,
-          border: `1px solid ${Colors.border}`, color: value ? Colors.text : Colors.textSecondary,
-          fontSize: 15, padding: '12px 14px', outline: 'none',
-          ...style as any,
-        } as React.CSSProperties}
-      />
-    );
-  }
   return (
     <TextInput
       style={[styles.input, style]}
       value={value}
       onChangeText={onChange}
-      placeholder="HH:MM"
+      placeholder="HH:MM（任意）"
       placeholderTextColor={Colors.textSecondary}
+      {...(Platform.OS === 'web' ? { type: 'time' } as any : {})}
     />
   );
 }
