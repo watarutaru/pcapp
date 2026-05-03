@@ -82,9 +82,9 @@ export default function AdminNazoScreen() {
       setImageUri(null);
       setMode('list');
       await load();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : '';
-      setError(msg || '保存に失敗しました');
+    } catch (e: unknown) {
+      const msg = (e as any)?.message || (e instanceof Error ? e.message : '') || '保存に失敗しました';
+      setError(String(msg));
     } finally {
       setSaving(false);
     }
