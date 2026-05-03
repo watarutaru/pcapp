@@ -4,7 +4,7 @@ import {
   TextInput, Alert, ActivityIndicator, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { getLives, createLive, deleteLive } from '@/lib/lives';
+import { getLives, createLive, updateLive, deleteLive } from '@/lib/lives';
 import { Live, LiveCategory } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 
@@ -19,11 +19,29 @@ const INIT_FORM = {
   description: '',
 };
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
+function liveToForm(live: Live) {
+  const d = new Date(live.date);
+  const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const h = d.getHours(), m = d.getMinutes();
+  const timeStr = (h === 0 && m === 0) ? '' : `${pad(h)}:${pad(m)}`;
+  return {
+    title: live.title,
+    date: dateStr,
+    time: timeStr,
+    venue: live.venue,
+    category: live.category,
+    description: live.description,
+  };
+}
+
 export default function AdminLiveScreen() {
   const router = useRouter();
   const [lives, setLives] = useState<Live[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'list' | 'form'>('list');
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(INIT_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -38,6 +56,20 @@ export default function AdminLiveScreen() {
   const titleSuggestions = useMemo(() => [...new Set(lives.map(l => l.title))], [lives]);
   const venueSuggestions = useMemo(() => [...new Set(lives.map(l => l.venue))], [lives]);
 
+  function openNew() {
+    setForm(INIT_FORM);
+    setEditingId(null);
+    setError('');
+    setMode('form');
+  }
+
+  function openEdit(live: Live) {
+    setForm(liveToForm(live));
+    setEditingId(live.id);
+    setError('');
+    setMode('form');
+  }
+
   async function handleSave() {
     setError('');
     if (!form.title.trim() || !form.date.trim() || !form.venue.trim()) {
@@ -51,8 +83,14 @@ export default function AdminLiveScreen() {
     }
     setSaving(true);
     try {
-      await createLive({ ...form, date: dateStr });
+      const input = { ...form, date: dateStr };
+      if (editingId) {
+        await updateLive(editingId, input);
+      } else {
+        await createLive(input);
+      }
       setForm(INIT_FORM);
+      setEditingId(null);
       setMode('list');
       await load();
     } catch (e: unknown) {
@@ -66,20 +104,13 @@ export default function AdminLiveScreen() {
   async function handleDelete(live: Live) {
     if (Platform.OS === 'web') {
       if (!window.confirm(`「${live.title}」を削除しますか？`)) return;
-      try {
-        await deleteLive(live.id);
-        await load();
-      } catch {
-        alert('削除に失敗しました');
-      }
+      try { await deleteLive(live.id); await load(); } catch { alert('削除に失敗しました'); }
     } else {
       Alert.alert('削除確認', `「${live.title}」を削除しますか？`, [
         { text: 'キャンセル', style: 'cancel' },
-        {
-          text: '削除', style: 'destructive', onPress: async () => {
-            try { await deleteLive(live.id); await load(); } catch { Alert.alert('エラー', '削除に失敗しました'); }
-          },
-        },
+        { text: '削除', style: 'destructive', onPress: async () => {
+          try { await deleteLive(live.id); await load(); } catch { Alert.alert('エラー', '削除に失敗しました'); }
+        }},
       ]);
     }
   }
@@ -92,10 +123,10 @@ export default function AdminLiveScreen() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => { setMode('list'); setError(''); }} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => { setMode('list'); setError(''); setEditingId(null); }} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← 戻る</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>ライブ追加</Text>
+          <Text style={styles.title}>{editingId ? 'ライブ編集' : 'ライブ追加'}</Text>
         </View>
 
         <View style={styles.formCard}>
@@ -105,27 +136,20 @@ export default function AdminLiveScreen() {
               onChangeText={v => setForm(f => ({ ...f, title: v }))}
               suggestions={titleSuggestions}
               placeholder="ライブ名"
-              style={styles.input}
             />
           </Field>
 
           <Field label="日付 *　/　時間（任意）">
             <View style={styles.dateTimeRow}>
-              <TextInput
-                style={[styles.input, styles.dateInput]}
+              <DateInput
                 value={form.date}
-                onChangeText={v => setForm(f => ({ ...f, date: v }))}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={Colors.textSecondary}
-                {...(Platform.OS === 'web' ? { type: 'date' } as any : {})}
+                onChange={v => setForm(f => ({ ...f, date: v }))}
+                style={styles.dateInput}
               />
-              <TextInput
-                style={[styles.input, styles.timeInput]}
+              <TimeInput
                 value={form.time}
-                onChangeText={v => setForm(f => ({ ...f, time: v }))}
-                placeholder="HH:MM"
-                placeholderTextColor={Colors.textSecondary}
-                {...(Platform.OS === 'web' ? { type: 'time' } as any : {})}
+                onChange={v => setForm(f => ({ ...f, time: v }))}
+                style={styles.timeInput}
               />
             </View>
           </Field>
@@ -136,7 +160,6 @@ export default function AdminLiveScreen() {
               onChangeText={v => setForm(f => ({ ...f, venue: v }))}
               suggestions={venueSuggestions}
               placeholder="会場名"
-              style={styles.input}
             />
           </Field>
 
@@ -174,7 +197,7 @@ export default function AdminLiveScreen() {
           onPress={handleSave}
           disabled={saving}
         >
-          <Text style={styles.saveBtnText}>{saving ? '保存中...' : '保存する'}</Text>
+          <Text style={styles.saveBtnText}>{saving ? '保存中...' : editingId ? '更新する' : '保存する'}</Text>
         </TouchableOpacity>
       </ScrollView>
     );
@@ -188,7 +211,7 @@ export default function AdminLiveScreen() {
         </TouchableOpacity>
         <View style={styles.headerRow}>
           <Text style={styles.title}>ライブ管理</Text>
-          <TouchableOpacity style={styles.addBtn} onPress={() => setMode('form')}>
+          <TouchableOpacity style={styles.addBtn} onPress={openNew}>
             <Text style={styles.addBtnText}>＋ 追加</Text>
           </TouchableOpacity>
         </View>
@@ -198,12 +221,15 @@ export default function AdminLiveScreen() {
         {lives.length === 0 && <Text style={styles.emptyText}>ライブがありません</Text>}
         {lives.map(live => (
           <View key={live.id} style={styles.row}>
-            <View style={styles.rowInfo}>
+            <TouchableOpacity style={styles.rowInfo} onPress={() => openEdit(live)}>
               <Text style={styles.rowTitle}>{live.title}</Text>
               <Text style={styles.rowSub}>
                 {new Date(live.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}　{live.venue}
               </Text>
-            </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(live)}>
+              <Text style={styles.editBtnText}>編集</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(live)}>
               <Text style={styles.deleteBtnText}>削除</Text>
             </TouchableOpacity>
@@ -214,12 +240,65 @@ export default function AdminLiveScreen() {
   );
 }
 
-function ComboBox({ value, onChangeText, suggestions, placeholder, style }: {
+function DateInput({ value, onChange, style }: { value: string; onChange: (v: string) => void; style: object }) {
+  if (Platform.OS === 'web') {
+    return (
+      <input
+        type="date"
+        value={value}
+        onChange={e => onChange((e as any).target.value)}
+        style={{
+          flex: 1, backgroundColor: Colors.background, borderRadius: 10,
+          border: `1px solid ${Colors.border}`, color: Colors.text,
+          fontSize: 15, padding: '12px 14px', outline: 'none',
+          ...style as any,
+        } as React.CSSProperties}
+      />
+    );
+  }
+  return (
+    <TextInput
+      style={[styles.input, style]}
+      value={value}
+      onChangeText={onChange}
+      placeholder="YYYY-MM-DD"
+      placeholderTextColor={Colors.textSecondary}
+    />
+  );
+}
+
+function TimeInput({ value, onChange, style }: { value: string; onChange: (v: string) => void; style: object }) {
+  if (Platform.OS === 'web') {
+    return (
+      <input
+        type="time"
+        value={value}
+        onChange={e => onChange((e as any).target.value)}
+        style={{
+          flex: 1, backgroundColor: Colors.background, borderRadius: 10,
+          border: `1px solid ${Colors.border}`, color: value ? Colors.text : Colors.textSecondary,
+          fontSize: 15, padding: '12px 14px', outline: 'none',
+          ...style as any,
+        } as React.CSSProperties}
+      />
+    );
+  }
+  return (
+    <TextInput
+      style={[styles.input, style]}
+      value={value}
+      onChangeText={onChange}
+      placeholder="HH:MM"
+      placeholderTextColor={Colors.textSecondary}
+    />
+  );
+}
+
+function ComboBox({ value, onChangeText, suggestions, placeholder }: {
   value: string;
   onChangeText: (v: string) => void;
   suggestions: string[];
   placeholder: string;
-  style: object;
 }) {
   const [open, setOpen] = useState(false);
   const filtered = suggestions
@@ -230,7 +309,7 @@ function ComboBox({ value, onChangeText, suggestions, placeholder, style }: {
   return (
     <View>
       <TextInput
-        style={style}
+        style={styles.input}
         value={value}
         onChangeText={v => { onChangeText(v); setOpen(true); }}
         onFocus={() => setOpen(true)}
@@ -276,55 +355,34 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   list: { paddingHorizontal: 24, paddingBottom: 40 },
   emptyText: { color: Colors.textSecondary, fontSize: 15, textAlign: 'center', marginTop: 40 },
-  row: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.surface, borderRadius: 12, padding: 16,
-    marginBottom: 10, borderWidth: 1, borderColor: Colors.border,
-  },
+  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: Colors.border },
   rowInfo: { flex: 1 },
   rowTitle: { color: Colors.text, fontSize: 15, fontWeight: '700', marginBottom: 3 },
   rowSub: { color: Colors.textSecondary, fontSize: 12 },
+  editBtn: { backgroundColor: Colors.primary + '22', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, marginRight: 6 },
+  editBtnText: { color: Colors.primary, fontSize: 13, fontWeight: '600' },
   deleteBtn: { backgroundColor: Colors.error + '22', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   deleteBtnText: { color: Colors.error, fontSize: 13, fontWeight: '600' },
   formScroll: { paddingBottom: 60 },
-  formCard: {
-    marginHorizontal: 24, backgroundColor: Colors.surface,
-    borderRadius: 16, padding: 20, borderWidth: 1, borderColor: Colors.border,
-  },
+  formCard: { marginHorizontal: 24, backgroundColor: Colors.surface, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: Colors.border },
   field: { marginBottom: 18 },
   fieldLabel: { color: Colors.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5 },
-  input: {
-    backgroundColor: Colors.background, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border,
-    color: Colors.text, fontSize: 15,
-    paddingHorizontal: 14, paddingVertical: 12,
-  },
+  input: { backgroundColor: Colors.background, borderRadius: 10, borderWidth: 1, borderColor: Colors.border, color: Colors.text, fontSize: 15, paddingHorizontal: 14, paddingVertical: 12 },
   inputMulti: { height: 100, textAlignVertical: 'top' },
   dateTimeRow: { flexDirection: 'row', gap: 8 },
-  dateInput: { flex: 3 },
-  timeInput: { flex: 2 },
+  dateInput: { flex: 3 } as any,
+  timeInput: { flex: 2 } as any,
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  catBtn: {
-    borderWidth: 1, borderColor: Colors.border,
-    borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8,
-  },
+  catBtn: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   catBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   catBtnText: { color: Colors.textSecondary, fontSize: 14 },
   catBtnTextActive: { color: '#fff', fontWeight: '700' },
-  suggestions: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1, borderColor: Colors.border,
-    borderRadius: 10, marginTop: 4, overflow: 'hidden',
-  },
+  suggestions: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 10, marginTop: 4, overflow: 'hidden' },
   suggestionItem: { paddingHorizontal: 14, paddingVertical: 11 },
   suggestionItemBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
   suggestionText: { color: Colors.text, fontSize: 15 },
   errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 24, marginTop: 12 },
-  saveBtn: {
-    marginHorizontal: 24, marginTop: 24,
-    backgroundColor: Colors.primary, borderRadius: 14,
-    paddingVertical: 18, alignItems: 'center',
-  },
+  saveBtn: { marginHorizontal: 24, marginTop: 24, backgroundColor: Colors.primary, borderRadius: 14, paddingVertical: 18, alignItems: 'center' },
   saveBtnDisabled: { opacity: 0.5 },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
