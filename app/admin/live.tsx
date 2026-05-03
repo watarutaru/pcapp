@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, Alert, ActivityIndicator, Platform,
@@ -10,7 +10,14 @@ import { Colors } from '@/constants/colors';
 
 const CATEGORIES: LiveCategory[] = ['ライブ', '配信', 'イベント', 'グッズ'];
 
-const INIT_FORM = { title: '', date: '', venue: '', category: 'ライブ' as LiveCategory, description: '' };
+const INIT_FORM = {
+  title: '',
+  date: '',
+  time: '',
+  venue: '',
+  category: 'ライブ' as LiveCategory,
+  description: '',
+};
 
 export default function AdminLiveScreen() {
   const router = useRouter();
@@ -28,19 +35,23 @@ export default function AdminLiveScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const titleSuggestions = useMemo(() => [...new Set(lives.map(l => l.title))], [lives]);
+  const venueSuggestions = useMemo(() => [...new Set(lives.map(l => l.venue))], [lives]);
+
   async function handleSave() {
     setError('');
     if (!form.title.trim() || !form.date.trim() || !form.venue.trim()) {
-      setError('タイトル・日時・会場は必須です');
+      setError('タイトル・日付・会場は必須です');
       return;
     }
-    if (isNaN(new Date(form.date).getTime())) {
-      setError('日時の形式が正しくありません（例: 2026-05-01 18:00）');
+    const dateStr = form.time ? `${form.date}T${form.time}` : `${form.date}T00:00`;
+    if (isNaN(new Date(dateStr).getTime())) {
+      setError('日付の形式が正しくありません');
       return;
     }
     setSaving(true);
     try {
-      await createLive(form);
+      await createLive({ ...form, date: dateStr });
       setForm(INIT_FORM);
       setMode('list');
       await load();
@@ -66,12 +77,7 @@ export default function AdminLiveScreen() {
         { text: 'キャンセル', style: 'cancel' },
         {
           text: '削除', style: 'destructive', onPress: async () => {
-            try {
-              await deleteLive(live.id);
-              await load();
-            } catch {
-              Alert.alert('エラー', '削除に失敗しました');
-            }
+            try { await deleteLive(live.id); await load(); } catch { Alert.alert('エラー', '削除に失敗しました'); }
           },
         },
       ]);
@@ -94,14 +100,46 @@ export default function AdminLiveScreen() {
 
         <View style={styles.formCard}>
           <Field label="タイトル *">
-            <TextInput style={styles.input} value={form.title} onChangeText={v => setForm(f => ({ ...f, title: v }))} placeholder="ライブ名" placeholderTextColor={Colors.textSecondary} />
+            <ComboBox
+              value={form.title}
+              onChangeText={v => setForm(f => ({ ...f, title: v }))}
+              suggestions={titleSuggestions}
+              placeholder="ライブ名"
+              style={styles.input}
+            />
           </Field>
-          <Field label="日時 * （例: 2026-05-01 18:00）">
-            <TextInput style={styles.input} value={form.date} onChangeText={v => setForm(f => ({ ...f, date: v }))} placeholder="YYYY-MM-DD HH:mm" placeholderTextColor={Colors.textSecondary} />
+
+          <Field label="日付 *　/　時間（任意）">
+            <View style={styles.dateTimeRow}>
+              <TextInput
+                style={[styles.input, styles.dateInput]}
+                value={form.date}
+                onChangeText={v => setForm(f => ({ ...f, date: v }))}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={Colors.textSecondary}
+                {...(Platform.OS === 'web' ? { type: 'date' } as any : {})}
+              />
+              <TextInput
+                style={[styles.input, styles.timeInput]}
+                value={form.time}
+                onChangeText={v => setForm(f => ({ ...f, time: v }))}
+                placeholder="HH:MM"
+                placeholderTextColor={Colors.textSecondary}
+                {...(Platform.OS === 'web' ? { type: 'time' } as any : {})}
+              />
+            </View>
           </Field>
+
           <Field label="会場 *">
-            <TextInput style={styles.input} value={form.venue} onChangeText={v => setForm(f => ({ ...f, venue: v }))} placeholder="会場名" placeholderTextColor={Colors.textSecondary} />
+            <ComboBox
+              value={form.venue}
+              onChangeText={v => setForm(f => ({ ...f, venue: v }))}
+              suggestions={venueSuggestions}
+              placeholder="会場名"
+              style={styles.input}
+            />
           </Field>
+
           <Field label="カテゴリ">
             <View style={styles.categoryRow}>
               {CATEGORIES.map(cat => (
@@ -115,6 +153,7 @@ export default function AdminLiveScreen() {
               ))}
             </View>
           </Field>
+
           <Field label="詳細（任意）">
             <TextInput
               style={[styles.input, styles.inputMulti]}
@@ -175,6 +214,47 @@ export default function AdminLiveScreen() {
   );
 }
 
+function ComboBox({ value, onChangeText, suggestions, placeholder, style }: {
+  value: string;
+  onChangeText: (v: string) => void;
+  suggestions: string[];
+  placeholder: string;
+  style: object;
+}) {
+  const [open, setOpen] = useState(false);
+  const filtered = suggestions
+    .filter(s => !value || s.toLowerCase().includes(value.toLowerCase()))
+    .filter(s => s.toLowerCase() !== value.toLowerCase())
+    .slice(0, 5);
+
+  return (
+    <View>
+      <TextInput
+        style={style}
+        value={value}
+        onChangeText={v => { onChangeText(v); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder={placeholder}
+        placeholderTextColor={Colors.textSecondary}
+      />
+      {open && filtered.length > 0 && (
+        <View style={styles.suggestions}>
+          {filtered.map((s, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[styles.suggestionItem, i < filtered.length - 1 && styles.suggestionItemBorder]}
+              onPress={() => { onChangeText(s); setOpen(false); }}
+            >
+              <Text style={styles.suggestionText}>{s}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View style={styles.field}>
@@ -220,6 +300,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12,
   },
   inputMulti: { height: 100, textAlignVertical: 'top' },
+  dateTimeRow: { flexDirection: 'row', gap: 8 },
+  dateInput: { flex: 3 },
+  timeInput: { flex: 2 },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   catBtn: {
     borderWidth: 1, borderColor: Colors.border,
@@ -228,6 +311,14 @@ const styles = StyleSheet.create({
   catBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   catBtnText: { color: Colors.textSecondary, fontSize: 14 },
   catBtnTextActive: { color: '#fff', fontWeight: '700' },
+  suggestions: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1, borderColor: Colors.border,
+    borderRadius: 10, marginTop: 4, overflow: 'hidden',
+  },
+  suggestionItem: { paddingHorizontal: 14, paddingVertical: 11 },
+  suggestionItemBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
+  suggestionText: { color: Colors.text, fontSize: 15 },
   errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 24, marginTop: 12 },
   saveBtn: {
     marginHorizontal: 24, marginTop: 24,
