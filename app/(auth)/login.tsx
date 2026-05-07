@@ -4,13 +4,29 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { sendMagicLink } from '@/lib/auth';
+import { sendMagicLink, resetPassword } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  async function handleResetPassword() {
+    if (!email) {
+      Alert.alert('エラー', 'メールアドレスを入力してください');
+      return;
+    }
+    setLoading(true);
+    try {
+      await resetPassword(email);
+      Alert.alert('送信しました', `${email} にパスワード再設定メールを送りました。`);
+    } catch (e) {
+      Alert.alert('エラー', e instanceof Error ? e.message : 'エラーが発生しました');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleLogin() {
     if (!email) {
@@ -66,6 +82,10 @@ export default function LoginScreen() {
           ) : (
             <Text style={styles.buttonText}>ログインリンクを送信</Text>
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.linkButton} onPress={handleResetPassword} disabled={loading}>
+          <Text style={styles.linkText}>パスワードを忘れた方はこちら</Text>
         </TouchableOpacity>
 
         <Link href="/(auth)/signup" asChild>
