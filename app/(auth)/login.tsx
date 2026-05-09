@@ -6,11 +6,30 @@ import {
 import { Link } from 'expo-router';
 import { sendMagicLink, resetPassword } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
+import LogoSvg from '@/components/LogoSvg';
+
+type View = 'welcome' | 'login' | 'sent';
 
 export default function LoginScreen() {
+  const [view, setView] = useState<View>('welcome');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+
+  async function handleLogin() {
+    if (!email) {
+      Alert.alert('エラー', 'メールアドレスを入力してください');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendMagicLink(email);
+      setView('sent');
+    } catch (e) {
+      Alert.alert('送信失敗', e instanceof Error ? e.message : 'エラーが発生しました');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleResetPassword() {
     if (!email) {
@@ -28,115 +47,207 @@ export default function LoginScreen() {
     }
   }
 
-  async function handleLogin() {
-    if (!email) {
-      Alert.alert('エラー', 'メールアドレスを入力してください');
-      return;
-    }
-    setLoading(true);
-    try {
-      await sendMagicLink(email);
-      setSent(true);
-    } catch (e) {
-      Alert.alert('送信失敗', e instanceof Error ? e.message : 'エラーが発生しました');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (sent) {
+  if (view === 'sent') {
     return (
       <View style={styles.center}>
-        <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
+        <LogoSvg size={120} />
         <Text style={styles.title}>メールを確認してください</Text>
         <Text style={styles.description}>
           {email} にログインリンクを送信しました。{'\n'}
           メール内のリンクをタップしてログインできます。
         </Text>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => setView('welcome')}>
+          <Text style={styles.secondaryButtonText}>戻る</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.inner}>
-        <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
-        <Text style={styles.title}>ログイン</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="メールアドレス"
-          placeholderTextColor={Colors.textSecondary}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>ログインリンクを送信</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.linkButton} onPress={handleResetPassword} disabled={loading}>
-          <Text style={styles.linkText}>パスワードを忘れた方はこちら</Text>
-        </TouchableOpacity>
-
-        <Link href="/(auth)/signup" asChild>
-          <TouchableOpacity style={styles.linkButton}>
-            <Text style={styles.linkText}>アカウントをお持ちでない方はこちら</Text>
+  if (view === 'login') {
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.inner}>
+          <TouchableOpacity style={styles.backButton} onPress={() => setView('welcome')}>
+            <Text style={styles.backButtonText}>← 戻る</Text>
           </TouchableOpacity>
-        </Link>
+
+          <Text style={styles.heading}>ログイン</Text>
+          <Text style={styles.subheading}>メールアドレスにログインリンクを送信します</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="メールアドレス"
+            placeholderTextColor={Colors.textSecondary}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoFocus
+          />
+
+          <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.primaryButtonText}>ログインリンクを送信</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.textLink} onPress={handleResetPassword} disabled={loading}>
+            <Text style={styles.textLinkText}>パスワードを忘れた方はこちら</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <View style={styles.welcome}>
+      <View style={styles.welcomeContent}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.brandTitle}>Piercing Cyclone</Text>
+          <Text style={styles.brandSubtitle}>OFFICIAL APP</Text>
+        </View>
+
+        <LogoSvg size={175} />
+
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity style={styles.primaryButton} onPress={() => setView('login')}>
+            <Text style={styles.primaryButtonText}>ログイン</Text>
+          </TouchableOpacity>
+
+          <Link href="/(auth)/signup" asChild>
+            <TouchableOpacity style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>ファンクラブに入会する</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
+  },
+  welcome: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  welcomeContent: {
+    alignItems: 'center',
+    gap: 36,
+    width: 283,
+  },
+  titleBlock: {
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+  },
+  brandTitle: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'serif',
+    fontSize: 36,
+    fontWeight: '400',
+    color: '#231815',
+    letterSpacing: 0.8,
+    textAlign: 'center',
+    lineHeight: 36,
+  },
+  brandSubtitle: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif-light',
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#231815',
+    letterSpacing: 0.8,
+    textAlign: 'center',
+  },
+  buttonGroup: {
+    alignItems: 'center',
+    gap: 16,
+    width: 230,
+  },
+  primaryButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 60,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    width: 230,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: Colors.textSecondary,
+    borderRadius: 50,
+    paddingVertical: 13,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    width: 230,
+  },
+  secondaryButtonText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '400',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
-    paddingHorizontal: 32,
-    gap: 16,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: 40,
+    gap: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.text,
+    textAlign: 'center',
+  },
+  description: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
   },
   inner: {
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 32,
+    backgroundColor: Colors.surface,
   },
-  logo: {
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 24,
+  },
+  backButtonText: {
+    color: Colors.textSecondary,
+    fontSize: 16,
+  },
+  heading: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: Colors.text,
-    textAlign: 'center',
     marginBottom: 8,
   },
-  title: {
-    fontSize: 20,
+  subheading: {
+    fontSize: 14,
     color: Colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  description: {
-    fontSize: 15,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
+    marginBottom: 32,
   },
   input: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.background,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 12,
@@ -146,24 +257,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
   },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkButton: {
-    marginTop: 24,
+  textLink: {
+    marginTop: 20,
     alignItems: 'center',
   },
-  linkText: {
+  textLinkText: {
     color: Colors.textSecondary,
-    fontSize: 14,
+    fontSize: 13,
   },
 });
