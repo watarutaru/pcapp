@@ -87,7 +87,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <UnreadProvider>
         <Stack screenOptions={{ headerShown: false }}>
           {session ? (
