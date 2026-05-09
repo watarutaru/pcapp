@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getDiary } from '@/lib/diaries';
 import { Diary } from '@/lib/types';
 import { Colors } from '@/constants/colors';
+import { useUnread } from '@/lib/UnreadContext';
 
 const AUTHOR_CONFIG = {
   wataru: { label: 'WATARU', color: '#3182ce', emoji: '🎸' },
@@ -17,13 +18,15 @@ export default function DiaryDetailScreen() {
   const router = useRouter();
   const [diary, setDiary] = useState<Diary | null>(null);
   const [loading, setLoading] = useState(true);
+  const { markRead } = useUnread();
 
   useEffect(() => {
     getDiary(id).then(data => {
       setDiary(data);
       setLoading(false);
     });
-  }, [id]);
+    markRead('diary', id);
+  }, [id, markRead]);
 
   if (loading) {
     return (

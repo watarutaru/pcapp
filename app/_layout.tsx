@@ -6,6 +6,7 @@ import { registerForPushNotifications, savePushToken } from '@/lib/notifications
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
+import { UnreadProvider } from '@/lib/UnreadContext';
 
 async function handleAuthUrl(url: string) {
   const fragment = url.split('#')[1];
@@ -87,13 +88,15 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }}>
-        {session ? (
-          <Stack.Screen name="(tabs)" />
-        ) : (
-          <Stack.Screen name="(auth)" />
-        )}
-      </Stack>
+      <UnreadProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          {session ? (
+            <Stack.Screen name="(tabs)" />
+          ) : (
+            <Stack.Screen name="(auth)" />
+          )}
+        </Stack>
+      </UnreadProvider>
     </>
   );
 }

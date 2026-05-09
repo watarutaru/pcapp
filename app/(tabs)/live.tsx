@@ -15,6 +15,7 @@ const CATEGORY_ICON: Record<LiveCategory, string> = {
   'グッズ': '👕',
 };
 import { Colors } from '@/constants/colors';
+import { useUnread } from '@/lib/UnreadContext';
 
 export default function LiveScreen() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function LiveScreen() {
   const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { readIds, refresh: refreshUnread } = useUnread();
 
   const load = useCallback(async () => {
     const [livesData, { data: { user } }] = await Promise.all([
@@ -38,11 +40,14 @@ export default function LiveScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), refreshUnread()]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, refreshUnread]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    load();
+    refreshUnread();
+  }, [load, refreshUnread]));
 
   if (loading) {
     return (
@@ -63,36 +68,39 @@ export default function LiveScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.liveCard}
-            onPress={() => router.push(`/live/${item.id}` as any)}
-          >
-            <View style={styles.dateContainer}>
-              <Text style={styles.categoryIcon}>
-                {CATEGORY_ICON[item.category] ?? '📅'}
-              </Text>
-              <Text style={styles.dateMonth}>
-                {new Date(item.date).toLocaleDateString('ja-JP', { month: 'short' })}
-              </Text>
-              <Text style={styles.dateDay}>
-                {new Date(item.date).getDate()}
-              </Text>
-            </View>
-            <View style={styles.liveInfo}>
-              <Text style={styles.liveTitle}>{item.title}</Text>
-              <Text style={styles.liveVenue}>{item.venue}</Text>
-              <Text style={styles.liveDate}>
-                {new Date(item.date).toLocaleDateString('ja-JP', {
-                  year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
-                })}
-              </Text>
-            </View>
-            {checkedInIds.has(item.id) && (
-              <View style={styles.checkedBadge}>
-                <Text style={styles.checkedText}>参戦済</Text>
+          <View style={styles.cardWrapper}>
+            <TouchableOpacity
+              style={styles.liveCard}
+              onPress={() => router.push(`/live/${item.id}` as any)}
+            >
+              <View style={styles.dateContainer}>
+                <Text style={styles.categoryIcon}>
+                  {CATEGORY_ICON[item.category] ?? '📅'}
+                </Text>
+                <Text style={styles.dateMonth}>
+                  {new Date(item.date).toLocaleDateString('ja-JP', { month: 'short' })}
+                </Text>
+                <Text style={styles.dateDay}>
+                  {new Date(item.date).getDate()}
+                </Text>
               </View>
-            )}
-          </TouchableOpacity>
+              <View style={styles.liveInfo}>
+                <Text style={styles.liveTitle}>{item.title}</Text>
+                <Text style={styles.liveVenue}>{item.venue}</Text>
+                <Text style={styles.liveDate}>
+                  {new Date(item.date).toLocaleDateString('ja-JP', {
+                    year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
+                  })}
+                </Text>
+              </View>
+              {checkedInIds.has(item.id) && (
+                <View style={styles.checkedBadge}>
+                  <Text style={styles.checkedText}>参戦済</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            {!readIds.live.has(item.id) && <View style={styles.unreadDot} />}
+          </View>
         )}
         ListEmptyComponent={
           <Text style={styles.emptyText}>ライブ情報はまだありません</Text>
@@ -127,15 +135,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 24,
   },
+  cardWrapper: {
+    position: 'relative',
+    marginBottom: 12,
+  },
   liveCard: {
     backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  unreadDot: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#ef4444',
+    borderWidth: 2,
+    borderColor: Colors.background,
   },
   dateContainer: {
     width: 48,

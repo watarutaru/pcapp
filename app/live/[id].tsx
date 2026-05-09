@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { getLive, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
+import { useUnread } from '@/lib/UnreadContext';
 
 export default function LiveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -14,6 +15,7 @@ export default function LiveDetailScreen() {
   const [live, setLive] = useState<Live | null>(null);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { markRead } = useUnread();
 
   useFocusEffect(useCallback(() => {
     async function load() {
@@ -27,9 +29,10 @@ export default function LiveDetailScreen() {
         setIsCheckedIn(checkins.some(c => c.live_id === id));
       }
       setLoading(false);
+      markRead('live', id);
     }
     load();
-  }, [id]));
+  }, [id, markRead]));
 
   if (loading) {
     return (
