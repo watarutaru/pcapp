@@ -50,6 +50,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="nazo"
+        options={{
+          title: 'ナゾ',
+          tabBarLabel: 'ナゾ',
+          tabBarBadge: unreadCounts.mystery > 0 ? unreadCounts.mystery : undefined,
+        }}
+      />
+      <Tabs.Screen
         name="music"
         options={{ title: '音楽', tabBarLabel: '音楽' }}
       />

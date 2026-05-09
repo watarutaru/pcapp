@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  ActivityIndicator, Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { getLive, getUserCheckins } from '@/lib/lives';
@@ -8,6 +9,24 @@ import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
+
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const wd = WEEKDAYS[d.getDay()];
+  return `${y}.${m}.${day} (${wd})`;
+}
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `開演 ${h}:${min}`;
+}
 
 export default function LiveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,7 +66,7 @@ export default function LiveDetailScreen() {
       <View style={styles.center}>
         <Text style={styles.errorText}>ライブ情報が見つかりません</Text>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>戻る</Text>
+          <Text style={styles.backButtonText}>戻る</Text>
         </TouchableOpacity>
       </View>
     );
@@ -55,102 +74,176 @@ export default function LiveDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← 戻る</Text>
-          </TouchableOpacity>
-        </View>
+      {/* ヘッダー */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>LIVE</Text>
+      </View>
 
-        <View style={styles.content}>
-          <Text style={styles.title}>{live.title}</Text>
+      {/* コンテンツカード */}
+      <View style={styles.card}>
+        {/* 閉じるボタン */}
+        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()} activeOpacity={0.7}>
+          <Text style={styles.closeButtonText}>×</Text>
+        </TouchableOpacity>
 
-          <View style={styles.infoCard}>
-            <InfoRow label="日時" value={new Date(live.date).toLocaleDateString('ja-JP', {
-              year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit',
-            })} />
-            <InfoRow label="会場" value={live.venue} />
+        <ScrollView
+          contentContainerStyle={styles.cardContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 日付・タイトル */}
+          <View style={styles.titleSection}>
+            <Text style={styles.dateText}>{formatDate(live.date)}</Text>
+            <Text style={styles.titleText}>{live.title}</Text>
           </View>
 
-          {live.description && (
-            <View style={styles.descCard}>
-              <Text style={styles.descTitle}>詳細</Text>
-              <Text style={styles.descText}>{live.description}</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        {isCheckedIn ? (
-          <View style={styles.checkedButton}>
-            <Text style={styles.checkedButtonText}>✓ 参戦済み</Text>
+          {/* 情報ボックス */}
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLine}>会場　{live.venue}</Text>
+            <Text style={styles.infoLine}>時間　{formatTime(live.date)}</Text>
+            {live.description ? (
+              <Text style={styles.infoLine}>{live.description}</Text>
+            ) : null}
           </View>
-        ) : (
-          <TouchableOpacity style={styles.checkinButton} onPress={() => router.push('/qr-checkin' as any)}>
-            <Text style={styles.checkinButtonText}>📷 QRコードでチェックイン（+50pt）</Text>
-          </TouchableOpacity>
-        )}
+
+          {/* チェックインボタン */}
+          <View style={styles.checkinSection}>
+            {isCheckedIn ? (
+              <View style={styles.checkedButton}>
+                <Text style={styles.checkedButtonText}>参戦済み</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.checkinButton}
+                onPress={() => router.push('/qr-checkin' as any)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.checkinButtonText}>このライブにチェックインする</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
       </View>
     </View>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
   center: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: Colors.background,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
-  errorText: { color: Colors.textSecondary, fontSize: 16, marginBottom: 16 },
+  errorText: {
+    color: Colors.textSecondary,
+    fontSize: 16,
+    marginBottom: 16,
+  },
   backButton: {
-    backgroundColor: Colors.primary, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
   },
-  backText: { color: '#fff', fontSize: 16 },
-  header: { paddingTop: 60, paddingHorizontal: 24, paddingBottom: 16 },
-  backBtn: { alignSelf: 'flex-start' },
-  backBtnText: { color: Colors.primary, fontSize: 16 },
-  content: { paddingHorizontal: 24 },
-  title: {
-    fontSize: 26, fontWeight: 'bold', color: Colors.text, marginBottom: 20,
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
-  infoCard: {
-    backgroundColor: Colors.surface, borderRadius: 16, padding: 16,
-    marginBottom: 16, borderWidth: 1, borderColor: Colors.border,
+  header: {
+    paddingTop: 56,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    alignItems: 'center',
   },
-  infoRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border,
+  headerTitle: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontSize: 24,
+    color: Colors.text,
+    letterSpacing: 1,
+    lineHeight: 32,
   },
-  infoLabel: { color: Colors.textSecondary, fontSize: 14 },
-  infoValue: { color: Colors.text, fontSize: 14, fontWeight: '600', flex: 1, textAlign: 'right' },
-  descCard: {
-    backgroundColor: Colors.surface, borderRadius: 16, padding: 16,
-    marginBottom: 100, borderWidth: 1, borderColor: Colors.border,
+  card: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 16,
   },
-  descTitle: { color: Colors.textSecondary, fontSize: 12, marginBottom: 8 },
-  descText: { color: Colors.text, fontSize: 15, lineHeight: 24 },
-  footer: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: 24, backgroundColor: Colors.background,
+  closeButton: {
+    alignSelf: 'flex-end',
+    marginRight: 24,
+    marginBottom: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#efefef',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  cardContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 48,
+    gap: 24,
+  },
+  titleSection: {
+    gap: 8,
+  },
+  dateText: {
+    fontSize: 16,
+    color: Colors.text,
+  },
+  titleText: {
+    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#0a0a0a',
+    lineHeight: 28,
+  },
+  infoBox: {
+    borderWidth: 1,
+    borderColor: Colors.text,
+    borderRadius: 4,
+    padding: 24,
+    gap: 10,
+  },
+  infoLine: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  checkinSection: {
+    paddingTop: 16,
   },
   checkinButton: {
-    backgroundColor: Colors.primary, borderRadius: 16,
-    paddingVertical: 18, alignItems: 'center',
+    backgroundColor: Colors.primary,
+    borderRadius: 60,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  checkinButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  checkinButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: -0.3,
+  },
   checkedButton: {
-    backgroundColor: Colors.success, borderRadius: 16,
-    paddingVertical: 18, alignItems: 'center',
+    backgroundColor: Colors.success,
+    borderRadius: 60,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  checkedButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  checkedButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
 });

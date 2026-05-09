@@ -1,38 +1,33 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
-  ActivityIndicator, TouchableOpacity,
+  ActivityIndicator, TouchableOpacity, Image, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import QRCode from 'react-native-qrcode-svg';
+import { SvgXml } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { getProfile } from '@/lib/profiles';
 import { getNextLive } from '@/lib/lives';
-import { Profile, STAGE_THRESHOLDS, Stage, Live, LiveCategory } from '@/lib/types';
+import { Profile, Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 
-const STAGE_LABELS: Record<Stage, string> = {
-  ROOKIE: '🌱 ROOKIE',
-  FAN: '⭐ FAN',
-  SUPPORTER: '🌟 SUPPORTER',
-  CYCLONER: '💫 CYCLONER',
-  LEGEND: '🌀 LEGEND',
-};
+const personSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="8" r="4" stroke="#222222" stroke-width="1.5"/>
+  <path d="M4 20c0-3.866 3.582-7 8-7s8 3.134 8 7" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
 
-const STAGE_COLORS: Record<Stage, string> = {
-  ROOKIE: '#718096',
-  FAN: '#d69e2e',
-  SUPPORTER: '#3182ce',
-  CYCLONER: '#805ad5',
-  LEGEND: '#e94560',
-};
-
-const CATEGORY_ICON: Record<LiveCategory, string> = {
-  'ライブ': '🎸',
-  '配信': '📡',
-  'イベント': '🎪',
-  'グッズ': '👕',
-};
+const qrSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="white" stroke-width="1.5"/>
+  <rect x="5.5" y="5.5" width="3" height="3" fill="white"/>
+  <rect x="13" y="3" width="8" height="8" rx="1.5" stroke="white" stroke-width="1.5"/>
+  <rect x="15.5" y="5.5" width="3" height="3" fill="white"/>
+  <rect x="3" y="13" width="8" height="8" rx="1.5" stroke="white" stroke-width="1.5"/>
+  <rect x="5.5" y="15.5" width="3" height="3" fill="white"/>
+  <rect x="13" y="13" width="3.5" height="3.5" fill="white"/>
+  <rect x="18" y="13" width="3" height="3.5" fill="white"/>
+  <rect x="13" y="18" width="3.5" height="3" fill="white"/>
+  <rect x="18" y="18" width="3" height="3" fill="white"/>
+</svg>`;
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -80,318 +75,303 @@ export default function HomeScreen() {
     );
   }
 
-  const stage = profile.stage as Stage;
-  const stageColor = STAGE_COLORS[stage];
-  const nextStagePoints = getNextStagePoints(profile.total_points);
-  const progress = getProgress(profile.total_points);
+  const memberId = profile.user_id.replace(/-/g, '').slice(0, 8).toUpperCase();
 
   return (
     <ScrollView
       style={styles.container}
+      contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+      showsVerticalScrollIndicator={false}
     >
+      {/* ヘッダー */}
       <View style={styles.header}>
-        <Text style={styles.appTitle}>Piercing Cyclone</Text>
-        <Text style={styles.memberLabel}>会員証</Text>
+        <TouchableOpacity
+          style={styles.accountButton}
+          onPress={() => router.push('/(tabs)/mypage' as any)}
+          activeOpacity={0.7}
+        >
+          <SvgXml xml={personSvg} width={20} height={20} />
+        </TouchableOpacity>
       </View>
 
       {/* 会員カード */}
-      <View style={[styles.card, { borderColor: stageColor }]}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.nickname}>{profile.nickname}</Text>
-          <Text style={[styles.stageBadge, { color: stageColor }]}>
-            {STAGE_LABELS[stage]}
-          </Text>
-        </View>
+      <View style={styles.memberCard}>
+        <Text style={styles.memberNumber}>No. {memberId}</Text>
+        <Image
+          source={require('@/assets/images/bicycle.png')}
+          style={styles.bicycleImage}
+          resizeMode="contain"
+        />
+        <Text style={styles.nickname}>{profile.nickname}</Text>
+      </View>
 
-        <View style={styles.cardDivider} />
-
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{profile.total_points}</Text>
-            <Text style={styles.statLabel}>ポイント</Text>
+      {/* STAGE / QR タイル */}
+      <View style={styles.tilesRow}>
+        <View style={styles.infoTile}>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>STAGE</Text>
+            <Text style={styles.infoValue}>{profile.stage}</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{profile.visit_count}</Text>
-            <Text style={styles.statLabel}>参戦回数</Text>
-          </View>
-        </View>
-
-        {nextStagePoints !== null && (
-          <View style={styles.progressSection}>
-            <Text style={styles.progressLabel}>
-              次のステージまで {nextStagePoints - profile.total_points}pt
-            </Text>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: stageColor }]} />
+          <View style={styles.tileDivider} />
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>POINTS</Text>
+            <View style={styles.pointsRow}>
+              <Text style={styles.pointsNumber}>{profile.total_points}</Text>
+              <Text style={styles.pointsUnit}>pt</Text>
             </View>
           </View>
-        )}
-
-        <View style={styles.qrSection}>
-          <QRCode
-            value={profile.user_id}
-            size={160}
-            color={Colors.text}
-            backgroundColor={Colors.surface}
-          />
-          <Text style={styles.memberId}>
-            Member #{String(profile.user_id).slice(0, 8).toUpperCase()}
-          </Text>
         </View>
-      </View>
 
-      {/* 直近スケジュール */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>直近の予定</Text>
-      </View>
-
-      {nextLive ? (
         <TouchableOpacity
-          style={styles.liveCard}
-          onPress={() => router.push(`/live/${nextLive.id}` as any)}
+          style={styles.qrTile}
+          onPress={() => router.push('/(tabs)/mypage' as any)}
           activeOpacity={0.8}
         >
-          <Text style={styles.categoryIcon}>
-            {CATEGORY_ICON[nextLive.category] ?? '📅'}
-          </Text>
-          <View style={styles.liveInfo}>
-            <View style={styles.liveTitleRow}>
-              <Text style={styles.categoryLabel}>{nextLive.category}</Text>
-              <Text style={styles.liveTitle}>{nextLive.title}</Text>
-            </View>
-            <Text style={styles.liveDate}>
-              {new Date(nextLive.date).toLocaleDateString('ja-JP', {
-                year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
-              })}
-              {' '}
-              {new Date(nextLive.date).toLocaleTimeString('ja-JP', {
-                hour: '2-digit', minute: '2-digit',
-              })}
-            </Text>
-            <Text style={styles.liveVenue}>{nextLive.venue}</Text>
-          </View>
-          <Text style={styles.chevron}>›</Text>
+          <SvgXml xml={qrSvg} width={24} height={24} />
+          <Text style={styles.qrLabel}>チェックイン</Text>
         </TouchableOpacity>
-      ) : (
-        <View style={styles.emptyLive}>
-          <Text style={styles.emptyLiveText}>予定はありません</Text>
-        </View>
-      )}
+      </View>
+
+      {/* NEXT WAVE */}
+      <View style={styles.nextWaveSection}>
+        <Text style={styles.nextWaveHeader}>NEXT WAVE</Text>
+
+        {nextLive ? (
+          <TouchableOpacity
+            style={styles.eventCard}
+            onPress={() => router.push(`/live/${nextLive.id}` as any)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.eventInfo}>
+              <Text style={styles.eventDate}>
+                {new Date(nextLive.date).toLocaleDateString('ja-JP', {
+                  month: 'long', day: 'numeric', weekday: 'short',
+                })}
+              </Text>
+              <Text style={styles.eventTitle} numberOfLines={2}>{nextLive.title}</Text>
+              <Text style={styles.eventMeta}>
+                {nextLive.venue}
+                {'  '}
+                {new Date(nextLive.date).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+            </View>
+            <View style={styles.illustContainer}>
+              <Image
+                source={require('@/assets/images/live-illust.png')}
+                style={styles.liveIllust}
+                resizeMode="contain"
+              />
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>直近の予定はありません</Text>
+          </View>
+        )}
+      </View>
     </ScrollView>
   );
-}
-
-function getNextStagePoints(points: number): number | null {
-  const thresholds = Object.values(STAGE_THRESHOLDS).sort((a, b) => a - b);
-  for (const t of thresholds) {
-    if (t > points) return t;
-  }
-  return null;
-}
-
-function getProgress(points: number): number {
-  const thresholds = Object.values(STAGE_THRESHOLDS).sort((a, b) => a - b);
-  let prev = 0;
-  for (const t of thresholds) {
-    if (t > points) {
-      return Math.round(((points - prev) / (t - prev)) * 100);
-    }
-    prev = t;
-  }
-  return 100;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f5f5f5',
+  },
+  content: {
+    paddingBottom: 32,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: '#f5f5f5',
   },
   errorText: {
     color: Colors.textSecondary,
     fontSize: 16,
   },
   header: {
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    alignItems: 'center',
-  },
-  appTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    letterSpacing: 1,
-  },
-  memberLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 4,
-  },
-  card: {
-    marginHorizontal: 24,
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    borderWidth: 2,
-    padding: 24,
-    marginBottom: 24,
-  },
-  cardHeader: {
+    paddingTop: 56,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+  },
+  accountButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  memberCard: {
+    marginHorizontal: 20,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    paddingTop: 16,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 12,
+  },
+  memberNumber: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontSize: 12,
+    color: Colors.text,
+    letterSpacing: 0.2,
+    marginBottom: 12,
+  },
+  bicycleImage: {
+    width: '100%',
+    aspectRatio: 350 / 168,
     marginBottom: 16,
   },
   nickname: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: Colors.text,
-  },
-  stageBadge: {
-    fontSize: 14,
+    fontSize: 24,
     fontWeight: '700',
-    letterSpacing: 1,
-  },
-  cardDivider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginBottom: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  stat: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
     color: Colors.text,
+    lineHeight: 32,
   },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 4,
+  tilesRow: {
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 28,
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: Colors.border,
-  },
-  progressSection: {
-    marginBottom: 16,
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: Colors.border,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  qrSection: {
+  infoTile: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#efefef',
+    height: 80,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    paddingHorizontal: 12,
   },
-  memberId: {
+  infoItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  infoLabel: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
     fontSize: 11,
     color: Colors.textSecondary,
-    textAlign: 'center',
-    letterSpacing: 1,
-    marginTop: 12,
+    letterSpacing: 0.5,
   },
-  sectionHeader: {
-    paddingHorizontal: 24,
+  infoValue: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.text,
+    letterSpacing: 0.3,
+  },
+  tileDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#efefef',
+  },
+  pointsRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 2,
+  },
+  pointsNumber: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif',
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  pointsUnit: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  qrTile: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    borderRadius: 10,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+  },
+  qrLabel: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontSize: 11,
+    color: '#fff',
+    letterSpacing: 0.3,
+  },
+  nextWaveSection: {
+    marginHorizontal: 20,
+  },
+  nextWaveHeader: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
+    fontSize: 18,
+    fontWeight: '500',
+    color: Colors.text,
+    letterSpacing: 1,
     marginBottom: 12,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  liveCard: {
-    marginHorizontal: 24,
+  eventCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.border,
-    padding: 16,
+    borderColor: '#efefef',
+    paddingVertical: 16,
+    paddingLeft: 16,
+    paddingRight: 0,
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  categoryIcon: {
-    fontSize: 32,
-    marginRight: 14,
-  },
-  liveInfo: {
-    flex: 1,
-  },
-  liveTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  categoryLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.primary,
-    backgroundColor: Colors.border,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
     overflow: 'hidden',
   },
-  liveTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.text,
+  eventInfo: {
     flex: 1,
+    gap: 4,
+    paddingRight: 8,
   },
-  liveDate: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginBottom: 2,
-  },
-  liveVenue: {
-    fontSize: 12,
+  eventDate: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontSize: 14,
     color: Colors.textSecondary,
   },
-  chevron: {
-    fontSize: 22,
-    color: Colors.textSecondary,
-    marginLeft: 8,
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.text,
+    lineHeight: 22,
   },
-  emptyLive: {
-    marginHorizontal: 24,
+  eventMeta: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  illustContainer: {
+    width: 90,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  liveIllust: {
+    width: 91,
+    height: 107,
+    transform: [{ rotate: '-19deg' }],
+  },
+  emptyCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#efefef',
     padding: 20,
     alignItems: 'center',
-    marginBottom: 24,
   },
-  emptyLiveText: {
+  emptyText: {
     color: Colors.textSecondary,
     fontSize: 14,
   },

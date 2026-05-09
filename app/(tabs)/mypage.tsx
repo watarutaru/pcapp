@@ -4,23 +4,21 @@ import {
   RefreshControl, ActivityIndicator, Alert, Modal, TextInput,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SvgXml } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
-import { getProfile, getPointHistory, updateProfile } from '@/lib/profiles';
+import { getProfile, updateProfile } from '@/lib/profiles';
 import { signOut } from '@/lib/auth';
-import { Profile, Point, Stage } from '@/lib/types';
+import { Profile } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 
-const STAGE_LABELS: Record<Stage, string> = {
-  ROOKIE: '🌱 ROOKIE',
-  FAN: '⭐ FAN',
-  SUPPORTER: '🌟 SUPPORTER',
-  CYCLONER: '💫 CYCLONER',
-  LEGEND: '🌀 LEGEND',
-};
+const pencilSvg = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 10.5V13h2.5l7.373-7.373-2.5-2.5L1 10.5zM12.805 3.695a.664.664 0 0 0 0-.94L11.245 1.195a.664.664 0 0 0-.94 0L9.13 2.37l2.5 2.5 1.175-1.175z" fill="white"/>
+</svg>`;
 
 export default function MyPageScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [points, setPoints] = useState<Point[]>([]);
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -31,12 +29,9 @@ export default function MyPageScreen() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const [p, ph] = await Promise.all([
-        getProfile(user.id),
-        getPointHistory(user.id),
-      ]);
+      const p = await getProfile(user.id);
       setProfile(p);
-      setPoints(ph);
+      setEmail(user.email ?? '');
     } finally {
       setLoading(false);
     }
@@ -79,87 +74,114 @@ export default function MyPageScreen() {
   async function handleSignOut() {
     Alert.alert('ログアウト', 'ログアウトしますか？', [
       { text: 'キャンセル', style: 'cancel' },
-      {
-        text: 'ログアウト',
-        style: 'destructive',
-        onPress: async () => {
-          await signOut();
-        },
-      },
+      { text: 'ログアウト', style: 'destructive', onPress: () => signOut() },
     ]);
   }
 
+  function handleDeleteAccount() {
+    Alert.alert(
+      'アカウント削除',
+      'アカウントを削除しますか？この操作は取り消せません。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        { text: '削除', style: 'destructive', onPress: () => signOut() },
+      ],
+    );
+  }
+
+  const memberId = profile
+    ? (profile.member_number ?? profile.user_id.replace(/-/g, '').slice(0, 11).toUpperCase())
+    : '';
+
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={Colors.primary} size="large" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color="#fff" size="large" />
       </View>
     );
   }
 
   return (
     <>
-      <ScrollView
-        style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>マイページ</Text>
-        </View>
+      <View style={styles.container}>
+        {/* グラデーション背景 */}
+        <LinearGradient
+          colors={['rgba(101,76,171,0.4)', 'rgba(234,96,37,0.4)']}
+          start={{ x: 0.75, y: 0 }}
+          end={{ x: 0.25, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
 
-        {profile && (
-          <View style={styles.profileCard}>
-            <View style={styles.profileCardHeader}>
-              <View style={styles.nicknameRow}>
-                <Text style={styles.nickname}>{profile.nickname}</Text>
-                <TouchableOpacity onPress={openEditModal} style={styles.editBtn}>
-                  <Text style={styles.editBtnText}>編集</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.stageBadge}>
-                {STAGE_LABELS[profile.stage as Stage]}
-              </Text>
-            </View>
-            <View style={styles.statsRow}>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>{profile.total_points}</Text>
-                <Text style={styles.statLabel}>ポイント</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>{profile.visit_count}</Text>
-                <Text style={styles.statLabel}>参戦回数</Text>
-              </View>
-            </View>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="rgba(255,255,255,0.5)" />}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* ヘッダー */}
+          <View style={styles.header}>
+            <Text style={styles.title}>ACCOUNT</Text>
           </View>
-        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ポイント履歴</Text>
-          {points.length === 0 ? (
-            <Text style={styles.emptyText}>ポイント履歴はありません</Text>
-          ) : (
-            points.map(p => (
-              <View key={p.id} style={styles.pointRow}>
-                <View style={styles.pointInfo}>
-                  <Text style={styles.pointReason}>{p.reason}</Text>
-                  <Text style={styles.pointDate}>
-                    {new Date(p.created_at).toLocaleDateString('ja-JP')}
-                  </Text>
-                </View>
-                <Text style={styles.pointAmount}>+{p.amount}pt</Text>
+          {/* 情報カード */}
+          {profile && (
+            <View style={styles.infoCard}>
+              {/* 変更ボタン */}
+              <TouchableOpacity style={styles.editButton} onPress={openEditModal} activeOpacity={0.7}>
+                <SvgXml xml={pencilSvg} width={14} height={14} />
+                <Text style={styles.editButtonText}>変更</Text>
+              </TouchableOpacity>
+
+              {/* 会員番号 */}
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>会員番号</Text>
+                <Text style={styles.fieldValue}>{memberId}</Text>
               </View>
-            ))
+
+              {/* ニックネーム */}
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>ニックネーム</Text>
+                <Text style={[styles.fieldValue, styles.fieldValueMedium]}>{profile.nickname}</Text>
+              </View>
+
+              {/* メールアドレス */}
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>メールアドレス</Text>
+                <Text style={styles.fieldValue}>{email}</Text>
+              </View>
+            </View>
           )}
-        </View>
 
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-            <Text style={styles.signOutText}>ログアウト</Text>
+          {/* 通知設定 */}
+          <TouchableOpacity style={styles.outlineButton} activeOpacity={0.7}>
+            <Text style={styles.outlineButtonText}>通知設定</Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
 
+          {/* 区切り線 */}
+          <View style={styles.divider} />
+
+          {/* リンク */}
+          <View style={styles.linkList}>
+            <TouchableOpacity activeOpacity={0.7}>
+              <Text style={styles.linkText}>利用規約</Text>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.7}>
+              <Text style={styles.linkText}>プライバシーポリシー</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ログアウト・削除 */}
+          <View style={styles.bottomActions}>
+            <TouchableOpacity style={styles.outlineButton} onPress={handleSignOut} activeOpacity={0.7}>
+              <Text style={styles.outlineButtonText}>ログアウト</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.7}>
+              <Text style={styles.deleteText}>アカウント削除</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* ニックネーム編集モーダル */}
       <Modal visible={editModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
           style={styles.modalOverlay}
@@ -178,14 +200,14 @@ export default function MyPageScreen() {
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.modalCancel}
+                style={styles.modalCancelBtn}
                 onPress={() => setEditModalVisible(false)}
                 disabled={saving}
               >
                 <Text style={styles.modalCancelText}>キャンセル</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalSave}
+                style={styles.modalSaveBtn}
                 onPress={handleSaveNickname}
                 disabled={saving}
               >
@@ -203,87 +225,158 @@ export default function MyPageScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  center: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: Colors.background,
+  container: {
+    flex: 1,
+    backgroundColor: '#222',
   },
-  header: { paddingTop: 60, paddingHorizontal: 24, paddingBottom: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: Colors.text },
-  profileCard: {
-    marginHorizontal: 24, backgroundColor: Colors.surface, borderRadius: 16,
-    padding: 20, marginBottom: 16, borderWidth: 1, borderColor: Colors.border,
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#222',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  profileCardHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
+  content: {
+    paddingBottom: 48,
   },
-  nicknameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nickname: { fontSize: 20, fontWeight: 'bold', color: Colors.text },
-  editBtn: {
-    borderWidth: 1, borderColor: Colors.border, borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 2,
+  header: {
+    paddingTop: 56,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    alignItems: 'center',
   },
-  editBtnText: { fontSize: 12, color: Colors.textSecondary },
-  stageBadge: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  title: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontSize: 24,
+    color: '#fff',
+    letterSpacing: 1,
+    lineHeight: 32,
+  },
+  infoCard: {
+    marginHorizontal: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 10,
+    padding: 24,
+    gap: 16,
+    marginBottom: 24,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-end',
+  },
+  editButtonText: {
+    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif-light',
+    fontSize: 12,
+    color: '#fff',
+    lineHeight: 14,
+  },
+  field: {
+    gap: 4,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    color: '#fff',
+    lineHeight: 16,
+  },
+  fieldValue: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontSize: 16,
+    color: '#fff',
+    lineHeight: 20,
+  },
+  fieldValueMedium: {
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
+    lineHeight: 24,
+  },
+  outlineButton: {
+    marginHorizontal: 24,
+    height: 50,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  outlineButtonText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  divider: {
+    marginHorizontal: 24,
+    marginVertical: 24,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  linkList: {
+    marginHorizontal: 24,
+    gap: 12,
+    marginBottom: 24,
+  },
+  linkText: {
+    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontSize: 14,
+    color: '#fff',
+    lineHeight: 20,
+  },
+  bottomActions: {
+    marginHorizontal: 0,
+    gap: 16,
+    alignItems: 'center',
+  },
+  deleteText: {
+    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.5)',
+    lineHeight: 20,
+  },
+
+  // モーダル
   modalOverlay: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   modalBox: {
-    width: '80%', backgroundColor: Colors.surface, borderRadius: 20,
+    width: '80%',
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
     padding: 24,
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.text, marginBottom: 16 },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 16,
+  },
   modalInput: {
-    borderWidth: 1, borderColor: Colors.border, borderRadius: 12,
-    paddingHorizontal: 16, paddingVertical: 12,
-    fontSize: 16, color: Colors.text, marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: Colors.text,
+    marginBottom: 20,
   },
   modalButtons: { flexDirection: 'row', gap: 12 },
-  modalCancel: {
-    flex: 1, borderWidth: 1, borderColor: Colors.border, borderRadius: 12,
-    paddingVertical: 12, alignItems: 'center',
+  modalCancelBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
   modalCancelText: { color: Colors.textSecondary, fontSize: 15 },
-  modalSave: {
-    flex: 1, backgroundColor: Colors.primary, borderRadius: 12,
-    paddingVertical: 12, alignItems: 'center',
+  modalSaveBtn: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
   modalSaveText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  statsRow: {
-    flexDirection: 'row', justifyContent: 'space-around',
-    paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.border,
-  },
-  stat: { alignItems: 'center', flex: 1 },
-  statValue: { fontSize: 24, fontWeight: 'bold', color: Colors.text },
-  statLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  statDivider: { width: 1, backgroundColor: Colors.border },
-  section: { paddingHorizontal: 24, marginBottom: 20 },
-  sectionTitle: {
-    fontSize: 13, color: Colors.textSecondary, fontWeight: '600',
-    marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1,
-  },
-  actionButton: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.surface, borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: Colors.primary,
-  },
-  actionEmoji: { fontSize: 24, marginRight: 12 },
-  actionLabel: { flex: 1, color: Colors.text, fontSize: 16, fontWeight: '600' },
-  actionArrow: { color: Colors.primary, fontSize: 18, fontWeight: 'bold' },
-  pointRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: Colors.surface, borderRadius: 12, padding: 14,
-    marginBottom: 8, borderWidth: 1, borderColor: Colors.border,
-  },
-  pointInfo: { flex: 1 },
-  pointReason: { color: Colors.text, fontSize: 14 },
-  pointDate: { color: Colors.textSecondary, fontSize: 12, marginTop: 2 },
-  pointAmount: { color: Colors.success, fontSize: 16, fontWeight: '700' },
-  emptyText: { color: Colors.textSecondary, fontSize: 14 },
-  signOutButton: {
-    borderWidth: 1, borderColor: Colors.error, borderRadius: 16,
-    paddingVertical: 16, alignItems: 'center',
-  },
-  signOutText: { color: Colors.error, fontSize: 16, fontWeight: '600' },
 });

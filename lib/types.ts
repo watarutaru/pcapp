@@ -6,6 +6,7 @@ export interface Profile {
   stage: string;
   total_points: number;
   visit_count: number;
+  member_number?: string;
   created_at: string;
 }
 
@@ -40,6 +41,18 @@ export interface Diary {
   id: string;
   author: 'wataru' | 'tamaru';
   content: string;
+  created_at: string;
+}
+
+export interface Mystery {
+  id: string;
+  vol: number;
+  title: string;
+  content: string;
+  image_url?: string;
+  hint?: string;
+  answer?: string;
+  is_published: boolean;
   created_at: string;
 }
 

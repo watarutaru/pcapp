@@ -4,43 +4,21 @@ import {
   RefreshControl, ActivityIndicator, Image, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { getDiaries } from '@/lib/diaries';
-import { Diary } from '@/lib/types';
+import { getMysteries } from '@/lib/mysteries';
+import { Mystery } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 
-const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const wd = WEEKDAYS[d.getDay()];
-  return `${y}.${m}.${day} (${wd})`;
-}
-
-const AUTHOR_CONFIG = {
-  wataru: {
-    label: 'Wataru',
-    avatar: require('@/assets/images/avatar-wataru.png'),
-  },
-  tamaru: {
-    label: 'tmrr',
-    avatar: require('@/assets/images/avatar-tamaru.png'),
-  },
-} as const;
-
-export default function DiaryScreen() {
+export default function NazoScreen() {
   const router = useRouter();
-  const [diaries, setDiaries] = useState<Diary[]>([]);
+  const [mysteries, setMysteries] = useState<Mystery[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { readIds, refresh: refreshUnread } = useUnread();
 
   const load = useCallback(async () => {
-    const data = await getDiaries();
-    setDiaries(data);
+    const data = await getMysteries();
+    setMysteries(data);
     setLoading(false);
   }, []);
 
@@ -67,47 +45,44 @@ export default function DiaryScreen() {
     <View style={styles.container}>
       {/* ヘッダー */}
       <View style={styles.header}>
-        <Text style={styles.title}>JOURNAL</Text>
+        <Text style={styles.title}>NAZO</Text>
       </View>
 
       <FlatList
-        data={diaries}
+        data={mysteries}
         keyExtractor={item => item.id}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
-          const config = AUTHOR_CONFIG[item.author];
-          const isUnread = !readIds.diary.has(item.id);
-          const preview = item.content.length > 60
-            ? item.content.slice(0, 60) + '...'
-            : item.content;
-
+          const isUnread = !readIds.mystery.has(item.id);
           return (
             <View style={styles.cardWrapper}>
               <TouchableOpacity
                 style={styles.card}
-                onPress={() => router.push(`/diary/${item.id}` as any)}
-                activeOpacity={0.8}
+                onPress={() => item.is_published && router.push(`/nazo/${item.id}` as any)}
+                activeOpacity={item.is_published ? 0.8 : 1}
               >
-                {/* ヘッダー行：日付 + 著者名 + アバター */}
-                <View style={styles.cardHeader}>
-                  <Text style={styles.dateText}>{formatDate(item.created_at)}</Text>
-                  <View style={styles.authorRow}>
-                    <Text style={styles.authorName}>{config.label}</Text>
-                    <Image source={config.avatar} style={styles.avatar} />
-                  </View>
+                <View style={styles.cardInfo}>
+                  <Text style={styles.volText}>Vol.{item.vol}</Text>
+                  <Text style={styles.titleText}>{item.title}</Text>
                 </View>
-
-                {/* プレビューテキスト */}
-                <Text style={styles.preview}>{preview}</Text>
+                <Image
+                  source={
+                    item.is_published
+                      ? require('@/assets/images/lock-open.png')
+                      : require('@/assets/images/lock-closed.png')
+                  }
+                  style={styles.lockIcon}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
-              {isUnread && <View style={styles.unreadDot} />}
+              {item.is_published && isUnread && <View style={styles.unreadDot} />}
             </View>
           );
         }}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>日記はまだありません</Text>
+          <Text style={styles.emptyText}>謎はまだありません</Text>
         }
       />
     </View>
@@ -153,40 +128,29 @@ const styles = StyleSheet.create({
     borderColor: '#efefef',
     paddingHorizontal: 24,
     paddingVertical: 17,
-    gap: 12,
-  },
-  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
   },
-  dateText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
-    fontSize: 14,
-    color: Colors.text,
-  },
-  authorRow: {
+  cardInfo: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 12,
+    gap: 4,
   },
-  authorName: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
-    fontSize: 14,
+  volText: {
+    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontSize: 16,
+    fontWeight: '500',
     color: Colors.text,
+    lineHeight: 16,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  preview: {
+  titleText: {
     fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
     fontSize: 12,
     color: Colors.text,
-    lineHeight: 18,
+  },
+  lockIcon: {
+    width: 48,
+    height: 48,
   },
   unreadDot: {
     position: 'absolute',
