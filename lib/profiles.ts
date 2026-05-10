@@ -11,6 +11,20 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
+export async function getOrCreateProfile(userId: string, email: string): Promise<Profile | null> {
+  const existing = await getProfile(userId);
+  if (existing) return existing;
+
+  const nickname = email.split('@')[0];
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({ user_id: userId, nickname, role: 'member', stage: 'ROOKIE', total_points: 0, visit_count: 0 })
+    .select()
+    .single();
+  if (error) return null;
+  return data;
+}
+
 export async function updateProfile(userId: string, updates: Partial<Pick<Profile, 'nickname'>>) {
   const { error } = await supabase
     .from('profiles')

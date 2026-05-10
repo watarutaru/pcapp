@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import { Platform } from 'react-native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { registerForPushNotifications, savePushToken } from '@/lib/notifications';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
+import { UnreadProvider } from '@/lib/UnreadContext';
 
 async function handleAuthUrl(url: string) {
   const fragment = url.split('#')[1];
@@ -24,29 +24,20 @@ export default function RootLayout() {
   const [initialized, setInitialized] = useState(false);
   const notificationListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
-  const router = useRouter();
-  const segments = useSegments();
 
   useEffect(() => {
     async function initialize() {
-      try {
-        // Web では detectSessionInUrl: true が自動でトークンを処理するため不要
-        if (Platform.OS !== 'web') {
-          const url = await Linking.getInitialURL();
-          if (url) await handleAuthUrl(url);
-        }
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-      } finally {
-        setInitialized(true);
-      }
+      const url = await Linking.getInitialURL();
+      if (url) await handleAuthUrl(url);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setInitialized(true);
     }
 
     initialize();
 
-    const linkingSub = Linking.addEventListener('url', ({ url }) => {
-      if (Platform.OS !== 'web') handleAuthUrl(url);
-    });
+    const linkingSub = Linking.addEventListener('url', ({ url }) => handleAuthUrl(url));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
@@ -92,26 +83,20 @@ export default function RootLayout() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!initialized) return;
-    const inAuthGroup = segments[0] === '(auth)';
-    if (session && inAuthGroup) {
-      router.replace('/(tabs)' as any);
-    } else if (!session && !inAuthGroup) {
-      router.replace('/(auth)/login' as any);
-    }
-  }, [session, initialized, segments]);
-
   if (!initialized) return null;
 
   return (
     <>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-      </Stack>
+      <StatusBar style="dark" />
+      <UnreadProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          {session ? (
+            <Stack.Screen name="(tabs)" />
+          ) : (
+            <Stack.Screen name="(auth)" />
+          )}
+        </Stack>
+      </UnreadProvider>
     </>
   );
 }
-

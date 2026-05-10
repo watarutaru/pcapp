@@ -1,14 +1,21 @@
 export const Colors = {
-  primary: '#7c3aed',
-  primaryDark: '#5b21b6',
-  background: '#1a1a2e',
-  surface: '#16213e',
-  card: '#0f3460',
-  accent: '#e94560',
-  text: '#ffffff',
-  textSecondary: '#a0aec0',
-  border: '#2d3748',
+  // ベースカラー（Figmaデザイントークン準拠）
+  background: '#efefef',
+  surface: '#ffffff',
+  text: '#222222',
+  textSecondary: '#898989',
+  border: 'rgba(34, 34, 34, 0.15)',
+
+  // アクション（メインボタンは黒）
+  primary: '#222222',
+  primaryText: '#ffffff',
+
+  // Piercingグラデーション（特殊ハイライト・ACCOUNT背景など）
+  gradientStart: '#654cab',
+  gradientEnd: '#ea6025',
+
+  // ステータス
   success: '#48bb78',
-  warning: '#ed8936',
-  error: '#fc8181',
+  warning: '#ea6025',
+  error: '#e94560',
 };

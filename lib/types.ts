@@ -6,6 +6,7 @@ export interface Profile {
   stage: string;
   total_points: number;
   visit_count: number;
+  member_number?: string;
   created_at: string;
 }
 
@@ -18,6 +19,10 @@ export interface Live {
   venue: string;
   description: string;
   category: LiveCategory;
+  open_time?: string;
+  ticket_info?: string;
+  artists?: string;
+  set_list?: string;
   created_at: string;
 }
 
@@ -58,6 +63,18 @@ export interface PcNazoResult {
   id: string;
   user_id: string;
   nazo_id: string;
+  created_at: string;
+}
+
+export interface Mystery {
+  id: string;
+  vol: number;
+  title: string;
+  content: string;
+  image_url?: string;
+  hint?: string;
+  answer?: string;
+  is_published: boolean;
   created_at: string;
 }
 

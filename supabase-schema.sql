@@ -2,6 +2,7 @@
 create table if not exists profiles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null unique,
+  member_number integer unique,
   nickname text not null,
   role text not null default 'member' check (role in ('member', 'admin')),
   stage text not null default 'ROOKIE',
@@ -24,11 +25,21 @@ create table if not exists lives (
   venue text not null,
   description text,
   category text not null default 'ライブ' check (category in ('ライブ', '配信', 'イベント', 'グッズ')),
+  open_time text,
+  ticket_info text,
+  artists text,
+  set_list text,
   created_at timestamptz not null default now()
 );
 
 -- migration: add category to existing lives table
 -- alter table lives add column if not exists category text not null default 'ライブ' check (category in ('ライブ', '配信', 'イベント', 'グッズ'));
+
+-- migration: 開場時間・チケット・出演・セットリストを追加
+-- alter table lives add column if not exists open_time text;
+-- alter table lives add column if not exists ticket_info text;
+-- alter table lives add column if not exists artists text;
+-- alter table lives add column if not exists set_list text;
 alter table lives enable row level security;
 create policy "Anyone can view lives" on lives for select using (true);
 
@@ -98,12 +109,25 @@ create trigger on_checkin_insert
   after insert on checkins
   for each row execute function increment_visit_count();
 
+-- read_items（既読管理）
+create table if not exists read_items (
+  user_id uuid references auth.users(id) on delete cascade not null,
+  item_type text not null check (item_type in ('live', 'diary', 'mystery')),
+  item_id uuid not null,
+  read_at timestamptz not null default now(),
+  primary key (user_id, item_type, item_id)
+);
+alter table read_items enable row level security;
+create policy "Users can manage own read items" on read_items
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
 -- indexes
 create index if not exists idx_lives_date on lives(date desc);
 create index if not exists idx_checkins_user_id on checkins(user_id);
 create index if not exists idx_checkins_live_id on checkins(live_id);
 create index if not exists idx_points_user_id_created_at on points(user_id, created_at desc);
 create index if not exists idx_diaries_created_at on diaries(created_at desc);
+create index if not exists idx_read_items_user_type on read_items(user_id, item_type);
 
 -- auto-create profile on signup (works even when email confirmation is enabled)
 create or replace function handle_new_user()
@@ -125,6 +149,9 @@ create trigger on_auth_user_created
 
 -- migration: 既存DBへの適用（新規作成時は不要）
 -- alter table profiles add column if not exists role text not null default 'member' check (role in ('member', 'admin'));
+
+-- migration: 会員番号カラムを追加
+-- alter table profiles add column if not exists member_number integer unique;
 
 -- migration: RLSポリシーの更新（既存DBへの適用）
 -- create or replace function is_admin()
