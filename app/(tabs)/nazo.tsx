@@ -67,15 +67,20 @@ export default function NazoScreen() {
                   <Text style={styles.volText}>Vol.{item.vol}</Text>
                   <Text style={styles.titleText}>{item.title}</Text>
                 </View>
-                <Image
-                  source={
-                    item.is_published
-                      ? require('@/assets/images/lock-open.png')
-                      : require('@/assets/images/lock-closed.png')
-                  }
-                  style={styles.lockIcon}
-                  resizeMode="contain"
-                />
+                <View style={styles.lockContainer}>
+                  <Image
+                    source={
+                      item.is_published
+                        ? require('@/assets/images/lock-open.png')
+                        : require('@/assets/images/lock-closed.png')
+                    }
+                    style={styles.lockIcon}
+                    resizeMode="contain"
+                  />
+                  {item.is_published && (
+                    <Text style={styles.decodeLabel}>Decode</Text>
+                  )}
+                </View>
               </TouchableOpacity>
               {item.is_published && isUnread && <View style={styles.unreadDot} />}
             </View>
@@ -92,13 +97,13 @@ export default function NazoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   header: {
     paddingTop: 56,
@@ -148,9 +153,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.text,
   },
+  lockContainer: {
+    alignItems: 'center',
+    gap: 2,
+  },
   lockIcon: {
-    width: 48,
-    height: 48,
+    width: 40,
+    height: 40,
+  },
+  decodeLabel: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontSize: 10,
+    color: Colors.error,
+    letterSpacing: 0.5,
   },
   unreadDot: {
     position: 'absolute',
@@ -161,7 +176,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#ef4444',
     borderWidth: 2,
-    borderColor: '#f5f5f5',
+    borderColor: '#f9f9f9',
   },
   emptyText: {
     textAlign: 'center',

@@ -4,6 +4,7 @@ import {
   RefreshControl, ActivityIndicator, Image, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getLives, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
@@ -121,9 +122,14 @@ export default function LiveScreen() {
                 activeOpacity={0.8}
               >
                 {isCheckedIn && (
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>参戦済</Text>
-                  </View>
+                  <LinearGradient
+                    colors={['#654cab', '#ea6025']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.statusBadge}
+                  >
+                    <Text style={styles.statusText}>Dragged!</Text>
+                  </LinearGradient>
                 )}
                 <View style={styles.cardContent}>
                   <View style={styles.cardTop}>
@@ -160,13 +166,13 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   header: {
     paddingTop: 56,
@@ -231,7 +237,6 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: Colors.primary,
     borderRadius: 2,
     paddingHorizontal: 5,
     paddingVertical: 1,
@@ -302,7 +307,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#ef4444',
     borderWidth: 2,
-    borderColor: '#f5f5f5',
+    borderColor: '#f9f9f9',
   },
   emptyText: {
     textAlign: 'center',

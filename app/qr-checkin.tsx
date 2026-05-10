@@ -112,7 +112,7 @@ export default function QrCheckinScreen() {
 
         {/* 成功コンテンツ */}
         <View style={styles.successBody}>
-          <Text style={styles.successText}>{successTitle}</Text>
+          <Text style={styles.successText}>Dragged!</Text>
           <Text style={styles.successText}>今日もありがとう</Text>
         </View>
 

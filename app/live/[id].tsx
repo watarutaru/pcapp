@@ -4,11 +4,17 @@ import {
   ActivityIndicator, Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SvgXml } from 'react-native-svg';
 import { getLive, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
+
+const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 6L6 18M6 6l12 12" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -83,13 +89,25 @@ export default function LiveDetailScreen() {
       <View style={styles.card}>
         {/* 閉じるボタン */}
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()} activeOpacity={0.7}>
-          <Text style={styles.closeButtonText}>×</Text>
+          <SvgXml xml={closeSvg} width={24} height={24} />
         </TouchableOpacity>
 
         <ScrollView
           contentContainerStyle={styles.cardContent}
           showsVerticalScrollIndicator={false}
         >
+          {/* Dragged! バッジ（チェックイン済み） */}
+          {isCheckedIn && (
+            <LinearGradient
+              colors={['#654cab', '#ea6025']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.draggedBadge}
+            >
+              <Text style={styles.draggedText}>Dragged!</Text>
+            </LinearGradient>
+          )}
+
           {/* 日付・タイトル */}
           <View style={styles.titleSection}>
             <Text style={styles.dateText}>{formatDate(live.date)}</Text>
@@ -130,13 +148,13 @@ export default function LiveDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   errorText: {
     color: Colors.textSecondary,
@@ -177,17 +195,23 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 24,
     marginBottom: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#efefef',
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    fontSize: 18,
-    color: Colors.text,
-    lineHeight: 20,
+  draggedBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 2,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  draggedText: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Bold' : 'sans-serif-condensed',
+    fontSize: 10,
+    color: '#fff',
+    letterSpacing: 1,
+    lineHeight: 16,
   },
   cardContent: {
     paddingHorizontal: 24,

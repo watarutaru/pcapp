@@ -4,6 +4,7 @@ import {
   Image, Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SvgXml } from 'react-native-svg';
 import { getDiary } from '@/lib/diaries';
 import { Diary } from '@/lib/types';
 import { Colors } from '@/constants/colors';
@@ -20,13 +21,17 @@ function formatDate(dateStr: string) {
   return `${y}.${m}.${day} (${wd})`;
 }
 
+const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 6L6 18M6 6l12 12" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
 const AUTHOR_CONFIG = {
   wataru: {
     label: 'Wataru',
     avatar: require('@/assets/images/avatar-wataru.png'),
   },
   tamaru: {
-    label: 'Tamaru',
+    label: 'tmrr',
     avatar: require('@/assets/images/avatar-tamaru.png'),
   },
 };
@@ -78,7 +83,7 @@ export default function DiaryDetailScreen() {
       <View style={styles.card}>
         {/* 閉じるボタン */}
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()} activeOpacity={0.7}>
-          <Text style={styles.closeButtonText}>×</Text>
+          <SvgXml xml={closeSvg} width={24} height={24} />
         </TouchableOpacity>
 
         <ScrollView
@@ -105,13 +110,13 @@ export default function DiaryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   errorText: {
     color: Colors.textSecondary,
@@ -152,17 +157,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 24,
     marginBottom: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#efefef',
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 18,
-    color: Colors.text,
-    lineHeight: 20,
   },
   cardContent: {
     paddingHorizontal: 24,
@@ -176,7 +174,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
-    fontSize: 16,
+    fontSize: 14,
     color: '#222',
   },
   authorGroup: {
@@ -198,7 +196,7 @@ const styles = StyleSheet.create({
   contentText: {
     fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif-light',
     fontSize: 14,
-    color: '#364153',
+    color: '#222',
     lineHeight: 23,
   },
 });

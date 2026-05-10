@@ -11,6 +11,10 @@ import { Mystery } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 
+const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 6L6 18M6 6l12 12" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
 const bulbSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M9 17h6M9 20h6M8.5 14.5C6.6 13.3 5.5 11.3 5.5 9a6.5 6.5 0 0 1 13 0c0 2.3-1.1 4.3-3 5.5V17h-7v-2.5z" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
@@ -87,7 +91,7 @@ export default function NazoDetailScreen() {
       <View style={styles.card}>
         {/* 閉じるボタン */}
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()} activeOpacity={0.7}>
-          <Text style={styles.closeButtonText}>×</Text>
+          <SvgXml xml={closeSvg} width={24} height={24} />
         </TouchableOpacity>
 
         <ScrollView
@@ -193,13 +197,13 @@ export default function NazoDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   errorText: {
     color: Colors.textSecondary,
@@ -240,17 +244,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 24,
     marginBottom: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#efefef',
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 18,
-    color: Colors.text,
-    lineHeight: 20,
   },
   cardContent: {
     paddingHorizontal: 24,

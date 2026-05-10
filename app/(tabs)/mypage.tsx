@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'expo-router';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   RefreshControl, ActivityIndicator, Alert, Modal, TextInput,
@@ -7,7 +8,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
-import { getProfile, updateProfile } from '@/lib/profiles';
+import { getOrCreateProfile, updateProfile } from '@/lib/profiles';
 import { signOut } from '@/lib/auth';
 import { Profile } from '@/lib/types';
 import { Colors } from '@/constants/colors';
@@ -16,7 +17,12 @@ const pencilSvg = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org
   <path d="M1 10.5V13h2.5l7.373-7.373-2.5-2.5L1 10.5zM12.805 3.695a.664.664 0 0 0 0-.94L11.245 1.195a.664.664 0 0 0-.94 0L9.13 2.37l2.5 2.5 1.175-1.175z" fill="white"/>
 </svg>`;
 
+const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
 export default function MyPageScreen() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
@@ -29,7 +35,7 @@ export default function MyPageScreen() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const p = await getProfile(user.id);
+      const p = await getOrCreateProfile(user.id, user.email ?? '');
       setProfile(p);
       setEmail(user.email ?? '');
     } finally {
@@ -119,7 +125,15 @@ export default function MyPageScreen() {
         >
           {/* ヘッダー */}
           <View style={styles.header}>
+            <View style={styles.headerSpacer} />
             <Text style={styles.title}>ACCOUNT</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <SvgXml xml={closeSvg} width={24} height={24} />
+            </TouchableOpacity>
           </View>
 
           {/* 情報カード */}
@@ -242,20 +256,33 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingHorizontal: 20,
     paddingBottom: 24,
+    flexDirection: 'row',
     alignItems: 'center',
   },
+  headerSpacer: {
+    width: 32,
+  },
   title: {
+    flex: 1,
     fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
     fontSize: 24,
     color: '#fff',
     letterSpacing: 1,
     lineHeight: 32,
+    textAlign: 'center',
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   infoCard: {
     marginHorizontal: 24,
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: 10,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     gap: 16,
     marginBottom: 24,
   },

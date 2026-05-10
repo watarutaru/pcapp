@@ -117,13 +117,13 @@ export default function DiaryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9f9f9',
   },
   header: {
     paddingTop: 56,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#ef4444',
     borderWidth: 2,
-    borderColor: '#f5f5f5',
+    borderColor: '#f9f9f9',
   },
   emptyText: {
     textAlign: 'center',
