@@ -19,6 +19,10 @@ export interface Live {
   venue: string;
   description: string;
   category: LiveCategory;
+  open_time?: string;
+  ticket_info?: string;
+  artists?: string;
+  set_list?: string;
   created_at: string;
 }
 

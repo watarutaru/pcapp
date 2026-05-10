@@ -25,11 +25,21 @@ create table if not exists lives (
   venue text not null,
   description text,
   category text not null default 'ライブ' check (category in ('ライブ', '配信', 'イベント', 'グッズ')),
+  open_time text,
+  ticket_info text,
+  artists text,
+  set_list text,
   created_at timestamptz not null default now()
 );
 
 -- migration: add category to existing lives table
 -- alter table lives add column if not exists category text not null default 'ライブ' check (category in ('ライブ', '配信', 'イベント', 'グッズ'));
+
+-- migration: 開場時間・チケット・出演・セットリストを追加
+-- alter table lives add column if not exists open_time text;
+-- alter table lives add column if not exists ticket_info text;
+-- alter table lives add column if not exists artists text;
+-- alter table lives add column if not exists set_list text;
 alter table lives enable row level security;
 create policy "Anyone can view lives" on lives for select using (true);
 

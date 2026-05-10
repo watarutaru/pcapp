@@ -16,6 +16,12 @@ const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/
   <path d="M18 6L6 18M6 6l12 12" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
+const noteSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M9 17V6l10-2v11" stroke="#222222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="6.5" cy="17" r="2.5" stroke="#222222" stroke-width="1.5"/>
+  <circle cx="16.5" cy="15" r="2.5" stroke="#222222" stroke-width="1.5"/>
+</svg>`;
+
 const chevronSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M10 12L6 8L10 4" stroke="#222222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
@@ -31,11 +37,12 @@ function formatDate(dateStr: string) {
   return `${y}.${m}.${day} (${wd})`;
 }
 
-function formatTime(dateStr: string) {
+function formatTime(dateStr: string, openTime?: string) {
   const d = new Date(dateStr);
   const h = String(d.getHours()).padStart(2, '0');
   const min = String(d.getMinutes()).padStart(2, '0');
-  return `開演 ${h}:${min}`;
+  const start = `開演 ${h}:${min}`;
+  return openTime ? `開場 ${openTime} / ${start}` : start;
 }
 
 export default function LiveDetailScreen() {
@@ -126,12 +133,29 @@ export default function LiveDetailScreen() {
 
           {/* 情報ボックス */}
           <View style={styles.infoBox}>
-            <Text style={styles.infoLine}>会場　{live.venue}</Text>
-            <Text style={styles.infoLine}>時間　{formatTime(live.date)}</Text>
+            <Text style={styles.infoLine}>会場　　{live.venue}</Text>
+            <Text style={styles.infoLine}>時間　　{formatTime(live.date, live.open_time)}</Text>
+            {live.ticket_info ? (
+              <Text style={styles.infoLine}>チケット　{live.ticket_info}</Text>
+            ) : null}
+            {live.artists ? (
+              <Text style={styles.infoLine}>出演　　{live.artists}</Text>
+            ) : null}
             {live.description ? (
-              <Text style={styles.infoLine}>{live.description}</Text>
+              <Text style={styles.descriptionText}>{live.description}</Text>
             ) : null}
           </View>
+
+          {/* SET LIST */}
+          {live.set_list ? (
+            <View style={styles.setListBox}>
+              <View style={styles.setListHeader}>
+                <SvgXml xml={noteSvg} width={24} height={24} />
+                <Text style={styles.setListTitle}>SET LIST</Text>
+              </View>
+              <Text style={styles.setListContent}>{live.set_list}</Text>
+            </View>
+          ) : null}
 
           {/* チェックインボタン */}
           <View style={styles.checkinSection}>
@@ -275,6 +299,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.text,
     lineHeight: 20,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: '#364153',
+    lineHeight: 23,
+    marginTop: 4,
+  },
+  setListBox: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  setListHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    height: 30,
+  },
+  setListTitle: {
+    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
+    fontSize: 18,
+    color: '#222',
+    letterSpacing: 1,
+    lineHeight: 18,
+  },
+  setListContent: {
+    fontSize: 14,
+    color: '#364153',
+    lineHeight: 23,
   },
   checkinSection: {
     paddingTop: 16,

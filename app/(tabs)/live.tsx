@@ -24,11 +24,12 @@ function formatDate(dateStr: string) {
   return `${y}.${m}.${day} (${wd})`;
 }
 
-function formatTime(dateStr: string) {
+function formatTime(dateStr: string, openTime?: string) {
   const d = new Date(dateStr);
   const h = String(d.getHours()).padStart(2, '0');
   const min = String(d.getMinutes()).padStart(2, '0');
-  return `開演 ${h}:${min}`;
+  const start = `開演 ${h}:${min}`;
+  return openTime ? `開場 ${openTime} / ${start}` : start;
 }
 
 export default function LiveScreen() {
@@ -138,7 +139,7 @@ export default function LiveScreen() {
                   </View>
                   <View style={styles.cardMeta}>
                     <Text style={styles.venueText}>{item.venue}</Text>
-                    <Text style={styles.timeText}>{formatTime(item.date)}</Text>
+                    <Text style={styles.timeText}>{formatTime(item.date, item.open_time)}</Text>
                   </View>
                 </View>
                 <View style={styles.illustContainer} pointerEvents="none">
