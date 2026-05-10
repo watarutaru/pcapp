@@ -6,7 +6,7 @@ import {
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
-import { getLive, getUserCheckins } from '@/lib/lives';
+import { getLive, getLives, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
@@ -14,6 +14,10 @@ import { useUnread } from '@/lib/UnreadContext';
 
 const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M18 6L6 18M6 6l12 12" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
+const chevronSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 12L6 8L10 4" stroke="#222222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
@@ -40,15 +44,21 @@ export default function LiveDetailScreen() {
   const [live, setLive] = useState<Live | null>(null);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [prevId, setPrevId] = useState<string | null>(null);
+  const [nextId, setNextId] = useState<string | null>(null);
   const { markRead } = useUnread();
 
   useFocusEffect(useCallback(() => {
     async function load() {
-      const [liveData, { data: { user } }] = await Promise.all([
+      const [liveData, allLives, { data: { user } }] = await Promise.all([
         getLive(id),
+        getLives(),
         supabase.auth.getUser(),
       ]);
       setLive(liveData);
+      const idx = allLives.findIndex(l => l.id === id);
+      setPrevId(idx > 0 ? allLives[idx - 1].id : null);
+      setNextId(idx >= 0 && idx < allLives.length - 1 ? allLives[idx + 1].id : null);
       if (user) {
         const checkins = await getUserCheckins(user.id);
         setIsCheckedIn(checkins.some(c => c.live_id === id));
@@ -96,7 +106,7 @@ export default function LiveDetailScreen() {
           contentContainerStyle={styles.cardContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Dragged! バッジ（チェックイン済み） */}
+          {/* Dragged!バッジ（チェックイン済み） */}
           {isCheckedIn && (
             <LinearGradient
               colors={['#654cab', '#ea6025']}
@@ -140,6 +150,28 @@ export default function LiveDetailScreen() {
             )}
           </View>
         </ScrollView>
+      </View>
+
+      {/* 前後ナビ */}
+      <View style={styles.navBar}>
+        <TouchableOpacity
+          style={[styles.navBtn, !prevId && styles.navBtnDisabled]}
+          onPress={() => prevId && router.replace(`/live/${prevId}` as any)}
+          disabled={!prevId}
+          activeOpacity={0.7}
+        >
+          <SvgXml xml={chevronSvg} width={16} height={16} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.navBtn, !nextId && styles.navBtnDisabled]}
+          onPress={() => nextId && router.replace(`/live/${nextId}` as any)}
+          disabled={!nextId}
+          activeOpacity={0.7}
+        >
+          <View style={{ transform: [{ rotate: '180deg' }] }}>
+            <SvgXml xml={chevronSvg} width={16} height={16} />
+          </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -269,5 +301,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
+  },
+  navBar: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#efefef',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  navBtn: {
+    backgroundColor: '#efefef',
+    borderRadius: 60,
+    padding: 10,
+  },
+  navBtnDisabled: {
+    opacity: 0.3,
   },
 });

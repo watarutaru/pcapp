@@ -6,13 +6,17 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getMystery } from '@/lib/mysteries';
+import { getMystery, getMysteries } from '@/lib/mysteries';
 import { Mystery } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 
 const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M18 6L6 18M6 6l12 12" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
+const chevronSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 12L6 8L10 4" stroke="#222222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
 const bulbSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -34,11 +38,17 @@ export default function NazoDetailScreen() {
   const [hintOpen, setHintOpen] = useState(false);
   const [answer, setAnswer] = useState('');
   const [answerState, setAnswerState] = useState<AnswerState>('idle');
+  const [prevId, setPrevId] = useState<string | null>(null);
+  const [nextId, setNextId] = useState<string | null>(null);
   const { markRead } = useUnread();
 
   useEffect(() => {
-    getMystery(id).then(data => {
+    Promise.all([getMystery(id), getMysteries()]).then(([data, all]) => {
       setMystery(data);
+      const published = all.filter(m => m.is_published);
+      const idx = published.findIndex(m => m.id === id);
+      setPrevId(idx > 0 ? published[idx - 1].id : null);
+      setNextId(idx >= 0 && idx < published.length - 1 ? published[idx + 1].id : null);
       setLoading(false);
     });
     markRead('mystery', id);
@@ -189,6 +199,28 @@ export default function NazoDetailScreen() {
             </LinearGradient>
           )}
         </ScrollView>
+      </View>
+
+      {/* 前後ナビ */}
+      <View style={styles.navBar}>
+        <TouchableOpacity
+          style={[styles.navBtn, !prevId && styles.navBtnDisabled]}
+          onPress={() => prevId && router.replace(`/nazo/${prevId}` as any)}
+          disabled={!prevId}
+          activeOpacity={0.7}
+        >
+          <SvgXml xml={chevronSvg} width={16} height={16} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.navBtn, !nextId && styles.navBtnDisabled]}
+          onPress={() => nextId && router.replace(`/nazo/${nextId}` as any)}
+          disabled={!nextId}
+          activeOpacity={0.7}
+        >
+          <View style={{ transform: [{ rotate: '180deg' }] }}>
+            <SvgXml xml={chevronSvg} width={16} height={16} />
+          </View>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -389,5 +421,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#fff',
     lineHeight: 20,
+  },
+  navBar: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#efefef',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  navBtn: {
+    backgroundColor: '#efefef',
+    borderRadius: 60,
+    padding: 10,
+  },
+  navBtnDisabled: {
+    opacity: 0.3,
   },
 });
