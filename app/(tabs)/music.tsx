@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Linking, ScrollView,
-  Image, Modal, Platform,
+  Image, Modal,
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import { Colors } from '@/constants/colors';
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -149,12 +150,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 16,
     color: '#222',
   },
   cardType: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 12,
     color: '#898989',
   },
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 20,
     color: Colors.text,
     fontWeight: '700',

@@ -1,3 +1,4 @@
+import { fonts } from '@/lib/fonts';
 import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -290,12 +291,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   volText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 16,
     color: '#222',
   },
   titleText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 20,
     color: '#364153',
   },
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   contentText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif-light',
+    fontFamily: fonts.jpLight,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   hintLabel: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
+    fontFamily: fonts.condensedMedium,
     fontSize: 18,
     color: '#222',
     letterSpacing: 1,
@@ -412,7 +413,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   correctTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W7' : 'sans-serif-black',
+    fontFamily: fonts.jpBlack,
     fontSize: 17,
     color: '#fff',
     fontWeight: '700',

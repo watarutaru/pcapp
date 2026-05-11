@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
-  ActivityIndicator, TouchableOpacity, Image, Platform,
+  ActivityIndicator, TouchableOpacity, Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
@@ -278,14 +279,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   memberNumber: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 12,
     color: Colors.text,
     letterSpacing: 0.2,
     lineHeight: 20,
   },
   nickname: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
@@ -319,14 +320,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   infoLabel: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 12,
     color: Colors.textSecondary,
     letterSpacing: 1,
     lineHeight: 16,
   },
   infoValue: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
+    fontFamily: fonts.medium,
     fontSize: 16,
     fontWeight: '500',
     color: Colors.text,
@@ -336,14 +337,14 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   pointsNumber: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif',
+    fontFamily: fonts.heavy,
     fontSize: 18,
     fontWeight: '700',
     color: Colors.text,
     letterSpacing: 0.36,
   },
   pointsUnit: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
+    fontFamily: fonts.medium,
     fontSize: 15,
     color: Colors.textSecondary,
   },
@@ -359,7 +360,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   qrLabel: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif',
+    fontFamily: fonts.jpLight,
     fontSize: 11,
     color: '#fff',
   },
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   nextWaveTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
+    fontFamily: fonts.condensedMedium,
     fontSize: 18,
     fontWeight: '500',
     color: Colors.text,
@@ -396,23 +397,23 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   eventDate: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: Colors.text,
   },
   eventTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W5' : 'sans-serif-medium',
+    fontFamily: fonts.jpRegular,
     fontSize: 16,
     fontWeight: '500',
     color: Colors.text,
   },
   eventVenue: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif',
+    fontFamily: fonts.jpLight,
     fontSize: 11,
     color: Colors.textSecondary,
   },
   eventTime: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 11,
     color: Colors.textSecondary,
   },

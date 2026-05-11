@@ -1,3 +1,4 @@
+import { fonts } from '@/lib/fonts';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import {
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: '#fff',
     letterSpacing: 1,
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   editButtonText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif-light',
+    fontFamily: fonts.jpLight,
     fontSize: 12,
     color: '#fff',
     lineHeight: 14,
@@ -316,13 +317,13 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   fieldValue: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 16,
     color: '#fff',
     lineHeight: 20,
   },
   fieldValueMedium: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
+    fontFamily: fonts.medium,
     lineHeight: 24,
   },
   outlineButton: {
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   linkText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 14,
     color: '#fff',
     lineHeight: 20,
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 14,
     color: 'rgba(255,255,255,0.5)',
     lineHeight: 20,

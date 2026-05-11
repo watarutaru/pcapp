@@ -7,6 +7,13 @@ import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import { UnreadProvider } from '@/lib/UnreadContext';
+import {
+  useFonts,
+  Lato_300Light,
+  Lato_400Regular,
+  Lato_700Bold,
+  Lato_900Black,
+} from '@expo-google-fonts/lato';
 
 async function handleAuthUrl(url: string) {
   const fragment = url.split('#')[1];
@@ -26,6 +33,7 @@ export default function RootLayout() {
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const router = useRouter();
   const segments = useSegments();
+  const [fontsLoaded] = useFonts({ Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black });
 
   useEffect(() => {
     async function initialize() {
@@ -92,7 +100,7 @@ export default function RootLayout() {
     }
   }, [session, initialized, segments]);
 
-  if (!initialized) return null;
+  if (!initialized || !fontsLoaded) return null;
 
   return (
     <>

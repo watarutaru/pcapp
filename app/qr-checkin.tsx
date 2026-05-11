@@ -1,3 +1,4 @@
+import { fonts } from '@/lib/fonts';
 import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image, Platform,
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: '#fff',
     letterSpacing: 1,

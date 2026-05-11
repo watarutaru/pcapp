@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Image, Platform,
+  RefreshControl, ActivityIndicator, Image,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   tabText: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
+    fontFamily: fonts.condensedMedium,
     fontSize: 16,
     color: Colors.text,
     letterSpacing: 1,
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   statusText: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Bold' : 'sans-serif-condensed',
+    fontFamily: fonts.condensedBold,
     fontSize: 10,
     color: '#fff',
     letterSpacing: 1,
@@ -257,13 +258,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   dateText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: Colors.text,
     lineHeight: 14,
   },
   titleText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 16,
     fontWeight: '500',
     color: Colors.text,
@@ -273,13 +274,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   venueText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif',
+    fontFamily: fonts.jpLight,
     fontSize: 11,
     color: Colors.text,
     lineHeight: 11,
   },
   timeText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 11,
     color: Colors.text,
     lineHeight: 11,

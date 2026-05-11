@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Image, Platform,
+  RefreshControl, ActivityIndicator, Image,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDiaries } from '@/lib/diaries';
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   dateText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: Colors.text,
   },
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   authorName: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: Colors.text,
   },
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   preview: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 12,
     color: Colors.text,
     lineHeight: 18,

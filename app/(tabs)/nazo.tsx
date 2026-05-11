@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Image, Platform,
+  RefreshControl, ActivityIndicator, Image,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getMysteries } from '@/lib/mysteries';
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -142,14 +143,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   volText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 16,
     fontWeight: '500',
     color: Colors.text,
     lineHeight: 16,
   },
   titleText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 12,
     color: Colors.text,
   },
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     height: 40,
   },
   decodeLabel: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 10,
     color: Colors.error,
     letterSpacing: 0.5,

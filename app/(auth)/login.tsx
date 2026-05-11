@@ -1,3 +1,4 @@
+import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   brandTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'serif',
+    fontFamily: fonts.regular,
     fontSize: 36,
     fontWeight: '400',
     color: '#231815',
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   brandSubtitle: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif-light',
+    fontFamily: fonts.regular,
     fontSize: 16,
     fontWeight: '300',
     color: '#231815',

@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
-  Image, Platform,
+  Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   dateText: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: '#222',
   },
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   authorName: {
-    fontFamily: Platform.OS === 'ios' ? 'Avenir' : 'sans-serif',
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: '#0a0a0a',
     lineHeight: 28,
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   contentText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W3' : 'sans-serif-light',
+    fontFamily: fonts.jpLight,
     fontSize: 14,
     color: '#222',
     lineHeight: 23,

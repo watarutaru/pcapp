@@ -1,7 +1,8 @@
+import { fonts } from '@/lib/fonts';
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Regular' : 'sans-serif-condensed',
+    fontFamily: fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   draggedText: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Bold' : 'sans-serif-condensed',
+    fontFamily: fonts.condensedBold,
     fontSize: 10,
     color: '#fff',
     letterSpacing: 1,
@@ -282,7 +283,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   titleText: {
-    fontFamily: Platform.OS === 'ios' ? 'HiraginoSans-W6' : 'sans-serif-medium',
+    fontFamily: fonts.jpBold,
     fontSize: 20,
     fontWeight: '500',
     color: '#0a0a0a',
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   setListTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNextCondensed-Medium' : 'sans-serif-condensed',
+    fontFamily: fonts.condensedMedium,
     fontSize: 18,
     color: '#222',
     letterSpacing: 1,
