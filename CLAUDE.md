@@ -24,23 +24,26 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=（Supabase ダッシュボード → Settings →
 npm install
 ```
 
+> **注意**: プロジェクトパスに `:` が含まれるため `npx expo` は動作しない。
+> 必ず `node_modules/.bin/expo` を直接呼び出すこと。
+
 ### スマホでのプレビュー（Expo Go）
 
 スマホとPCが**同じWi-Fi**にいる場合（推奨・安定）：
 ```bash
-npx expo start
+node_modules/.bin/expo start
 ```
 
 ネットワークが異なる場合（トンネル経由）：
 ```bash
-npx expo start --tunnel
+node_modules/.bin/expo start --tunnel
 ```
 - 初回は `@expo/ngrok` のインストールを求められる → Yes
 - Cloudflare トンネル URL（`exp://xxxx.trycloudflare.com`）が発行される
 - スマホの **Expo Go** アプリでQRコードを読み込む
 - トンネルが不安定な場合は `--clear` を追加して再起動：
   ```bash
-  npx expo start --tunnel --clear
+  node_modules/.bin/expo start --tunnel --clear
   ```
 
 ## DBスキーマ
