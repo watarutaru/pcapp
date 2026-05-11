@@ -29,22 +29,31 @@ npm install
 
 ### スマホでのプレビュー（Expo Go）
 
-スマホとPCが**同じWi-Fi**にいる場合（推奨・安定）：
+> **注意**: LAN直接接続は動作しない。必ず以下のCloudflareトンネル方式を使うこと。
+> ngrok（`--tunnel`オプション）は不安定なため使用しない。
+
+**3つのターミナルを順番に起動する：**
+
+**Terminal 1 — Metro:**
 ```bash
-node_modules/.bin/expo start
+node_modules/.bin/expo start --clear
 ```
 
-ネットワークが異なる場合（トンネル経由）：
+**Terminal 2 — プロキシ:**
 ```bash
-node_modules/.bin/expo start --tunnel
+node expo-proxy.js
 ```
-- 初回は `@expo/ngrok` のインストールを求められる → Yes
-- Cloudflare トンネル URL（`exp://xxxx.trycloudflare.com`）が発行される
-- スマホの **Expo Go** アプリでQRコードを読み込む
-- トンネルが不安定な場合は `--clear` を追加して再起動：
-  ```bash
-  node_modules/.bin/expo start --tunnel --clear
-  ```
+
+**Terminal 3 — Cloudflareトンネル:**
+```bash
+cloudflared tunnel --url http://localhost:8090
+```
+
+トンネルURLが発行されたら（例: `https://xxxx.trycloudflare.com`）、
+Expo Goアプリで以下のURLを手動入力：
+```
+exp://xxxx.trycloudflare.com
+```
 
 ## DBスキーマ
 
