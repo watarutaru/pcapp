@@ -1,5 +1,6 @@
 // Expo Metro proxy: rewrites Metro's local URLs to use the Cloudflare tunnel URL
 const http = require('http');
+const net = require('net');
 
 const METRO_PORT = 8081;
 const PROXY_PORT = 8090;
@@ -59,6 +60,24 @@ const server = http.createServer((req, res) => {
     res.writeHead(502);
     res.end('Proxy error: ' + err.message);
   });
+});
+
+// WebSocket proxy (/hot, /message など)
+server.on('upgrade', (req, socket, head) => {
+  const upstream = net.connect(METRO_PORT, '127.0.0.1');
+  upstream.on('connect', () => {
+    let raw = `${req.method} ${req.url} HTTP/1.1\r\n`;
+    for (const [k, v] of Object.entries(req.headers)) {
+      raw += `${k}: ${v}\r\n`;
+    }
+    raw += '\r\n';
+    upstream.write(raw);
+    if (head && head.length) upstream.write(head);
+    socket.pipe(upstream);
+    upstream.pipe(socket);
+  });
+  socket.on('error', () => upstream.destroy());
+  upstream.on('error', () => socket.destroy());
 });
 
 server.listen(PROXY_PORT, () => {

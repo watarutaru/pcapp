@@ -4,11 +4,12 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { sendMagicLink } from '@/lib/auth';
+import { signUpWithPassword } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
 
 export default function SignupScreen() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -16,17 +17,21 @@ export default function SignupScreen() {
 
   async function handleSignup() {
     setError('');
-    if (!email || !nickname) {
+    if (!email || !password || !nickname) {
       setError('すべての項目を入力してください');
+      return;
+    }
+    if (password.length < 6) {
+      setError('パスワードは6文字以上で入力してください');
       return;
     }
     setLoading(true);
     try {
-      await sendMagicLink(email, nickname);
+      await signUpWithPassword(email, password, nickname);
       setSent(true);
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
-      setError(msg || 'メール送信に失敗しました。時間をおいて再度お試しください。');
+      setError(msg || '登録に失敗しました。時間をおいて再度お試しください。');
     } finally {
       setLoading(false);
     }
@@ -36,10 +41,10 @@ export default function SignupScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
-        <Text style={styles.title}>メールを確認してください</Text>
+        <Text style={styles.title}>確認メールを送信しました</Text>
         <Text style={styles.description}>
-          {email} にログインリンクを送信しました。{'\n'}
-          メール内のリンクをタップしてログインできます。
+          {email} に確認メールを送信しました。{'\n'}
+          メール内のリンクをタップして登録を完了してください。
         </Text>
       </View>
     );
@@ -70,12 +75,20 @@ export default function SignupScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
+        <TextInput
+          style={styles.input}
+          placeholder="パスワード（6文字以上）"
+          placeholderTextColor={Colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
         <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>登録してログイン</Text>
+            <Text style={styles.buttonText}>登録する</Text>
           )}
         </TouchableOpacity>
 

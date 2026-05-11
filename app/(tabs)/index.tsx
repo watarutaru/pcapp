@@ -60,16 +60,34 @@ export default function HomeScreen() {
   const [nextLive, setNextLive] = useState<Live | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('initializing...');
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (userId: string, email: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const [p, live] = await Promise.all([
-        getOrCreateProfile(user.id, user.email ?? ''),
-        getNextLive(),
-      ]);
-      setProfile(p);
+      setDebugInfo(`loading for ${userId.slice(0, 8)}...`);
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles').select('*').eq('user_id', userId).maybeSingle();
+      if (profileError) {
+        setDebugInfo(`select error: ${profileError.code} ${profileError.message}`);
+        return;
+      }
+      if (!profileData) {
+        setDebugInfo(`no profile, inserting...`);
+        const { error: insertError } = await supabase
+          .from('profiles').insert({ user_id: userId, nickname: email.split('@')[0] });
+        if (insertError) {
+          setDebugInfo(`insert error: ${insertError.code} ${insertError.message}`);
+        }
+        const { data: retryData, error: retryError } = await supabase
+          .from('profiles').select('*').eq('user_id', userId).maybeSingle();
+        if (retryError) setDebugInfo(`retry error: ${retryError.code} ${retryError.message}`);
+        else if (retryData) { setProfile(retryData); setDebugInfo('ok'); }
+        else setDebugInfo('profile still null after insert');
+      } else {
+        setProfile(profileData);
+        setDebugInfo('ok');
+      }
+      const live = await getNextLive();
       setNextLive(live);
     } finally {
       setLoading(false);
@@ -78,11 +96,22 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) await load(session.user.id, session.user.email ?? '');
     setRefreshing(false);
   }, [load]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setDebugInfo(`event: ${event}, user: ${session?.user?.id?.slice(0, 8) ?? 'null'}`);
+      if (session?.user) {
+        load(session.user.id, session.user.email ?? '');
+      } else {
+        setLoading(false);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [load]);
 
   if (loading) {
     return (
@@ -96,6 +125,7 @@ export default function HomeScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>プロフィールが見つかりません</Text>
+        <Text style={[styles.errorText, { fontSize: 11, marginTop: 8, paddingHorizontal: 16, textAlign: 'center' }]}>{debugInfo}</Text>
       </View>
     );
   }

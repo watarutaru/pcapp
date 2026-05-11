@@ -6,23 +6,29 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     .from('profiles')
     .select('*')
     .eq('user_id', userId)
-    .single();
-  if (error) return null;
-  return data;
+    .maybeSingle();
+  if (error) console.error('[getProfile] error:', JSON.stringify(error));
+  return data ?? null;
 }
 
 export async function getOrCreateProfile(userId: string, email: string): Promise<Profile | null> {
+  console.log('[getOrCreateProfile] userId:', userId);
   const existing = await getProfile(userId);
-  if (existing) return existing;
+  if (existing) {
+    console.log('[getOrCreateProfile] found existing profile');
+    return existing;
+  }
 
+  console.log('[getOrCreateProfile] no profile, inserting...');
   const nickname = email.split('@')[0];
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('profiles')
-    .insert({ user_id: userId, nickname, role: 'member', stage: 'ROOKIE', total_points: 0, visit_count: 0 })
-    .select()
-    .single();
-  if (error) return null;
-  return data;
+    .insert({ user_id: userId, nickname, role: 'member', stage: 'ROOKIE', total_points: 0, visit_count: 0 });
+  if (error) console.error('[getOrCreateProfile] insert error:', JSON.stringify(error));
+
+  const retry = await getProfile(userId);
+  console.log('[getOrCreateProfile] retry result:', retry ? 'found' : 'null');
+  return retry;
 }
 
 export async function updateProfile(userId: string, updates: Partial<Pick<Profile, 'nickname'>>) {

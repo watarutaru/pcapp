@@ -31,13 +31,11 @@ export default function MyPageScreen() {
   const [editNickname, setEditNickname] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (userId: string, userEmail: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const p = await getOrCreateProfile(user.id, user.email ?? '');
+      const p = await getOrCreateProfile(userId, userEmail);
       setProfile(p);
-      setEmail(user.email ?? '');
+      setEmail(userEmail);
     } finally {
       setLoading(false);
     }
@@ -45,11 +43,21 @@ export default function MyPageScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) await load(session.user.id, session.user.email ?? '');
     setRefreshing(false);
   }, [load]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        load(session.user.id, session.user.email ?? '');
+      } else {
+        setLoading(false);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [load]);
 
   function openEditModal() {
     setEditNickname(profile?.nickname ?? '');
@@ -65,7 +73,8 @@ export default function MyPageScreen() {
     if (!profile) return;
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
       await updateProfile(user.id, { nickname: trimmed });
       setProfile({ ...profile, nickname: trimmed });

@@ -4,28 +4,28 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { sendMagicLink, resetPassword } from '@/lib/auth';
+import { signInWithPassword, resetPassword } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
 import LogoSvg from '@/components/LogoSvg';
 
-type View = 'welcome' | 'login' | 'sent';
+type ViewType = 'welcome' | 'login';
 
 export default function LoginScreen() {
-  const [view, setView] = useState<View>('welcome');
+  const [view, setView] = useState<ViewType>('welcome');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    if (!email) {
-      Alert.alert('エラー', 'メールアドレスを入力してください');
+    if (!email || !password) {
+      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
       return;
     }
     setLoading(true);
     try {
-      await sendMagicLink(email);
-      setView('sent');
+      await signInWithPassword(email, password);
     } catch (e) {
-      Alert.alert('送信失敗', e instanceof Error ? e.message : 'エラーが発生しました');
+      Alert.alert('ログイン失敗', e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
@@ -47,22 +47,6 @@ export default function LoginScreen() {
     }
   }
 
-  if (view === 'sent') {
-    return (
-      <View style={styles.center}>
-        <LogoSvg size={120} />
-        <Text style={styles.title}>メールを確認してください</Text>
-        <Text style={styles.description}>
-          {email} にログインリンクを送信しました。{'\n'}
-          メール内のリンクをタップしてログインできます。
-        </Text>
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => setView('welcome')}>
-          <Text style={styles.secondaryButtonText}>戻る</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   if (view === 'login') {
     return (
       <KeyboardAvoidingView
@@ -75,7 +59,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <Text style={styles.heading}>ログイン</Text>
-          <Text style={styles.subheading}>メールアドレスにログインリンクを送信します</Text>
 
           <TextInput
             style={styles.input}
@@ -87,12 +70,20 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoFocus
           />
+          <TextInput
+            style={styles.input}
+            placeholder="パスワード"
+            placeholderTextColor={Colors.textSecondary}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
           <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.primaryButtonText}>ログインリンクを送信</Text>
+              <Text style={styles.primaryButtonText}>ログイン</Text>
             )}
           </TouchableOpacity>
 

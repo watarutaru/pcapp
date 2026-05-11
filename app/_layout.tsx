@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { registerForPushNotifications, savePushToken } from '@/lib/notifications';
@@ -24,15 +24,13 @@ export default function RootLayout() {
   const [initialized, setInitialized] = useState(false);
   const notificationListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     async function initialize() {
       const url = await Linking.getInitialURL();
       if (url) await handleAuthUrl(url);
-
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setInitialized(true);
     }
 
     initialize();
@@ -41,6 +39,7 @@ export default function RootLayout() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
+      if (event === 'INITIAL_SESSION') setInitialized(true);
       if (session?.user) {
         try {
           const token = await registerForPushNotifications();
@@ -82,6 +81,16 @@ export default function RootLayout() {
       responseListener.current?.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!initialized) return;
+    const inAuth = segments[0] === '(auth)';
+    if (!session && !inAuth) {
+      router.replace('/(auth)/login');
+    } else if (session && inAuth) {
+      router.replace('/(tabs)');
+    }
+  }, [session, initialized, segments]);
 
   if (!initialized) return null;
 
