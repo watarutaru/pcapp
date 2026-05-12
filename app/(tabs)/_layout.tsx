@@ -1,21 +1,9 @@
-import { useState, useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import { supabase } from '@/lib/supabase';
-import { getProfile } from '@/lib/profiles';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 
 export default function TabsLayout() {
-  const [isAdmin, setIsAdmin] = useState(false);
   const { unreadCounts } = useUnread();
-
-  useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const profile = await getProfile(user.id);
-      setIsAdmin(profile?.role === 'admin');
-    });
-  }, []);
   return (
     <Tabs
       screenOptions={{
@@ -62,15 +50,11 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="mypage"
-        options={{ title: 'マイページ', tabBarLabel: 'マイページ' }}
+        options={{ title: 'マイページ', href: null }}
       />
       <Tabs.Screen
         name="admin"
-        options={{
-          title: '管理',
-          tabBarLabel: '管理',
-          href: isAdmin ? undefined : null,
-        }}
+        options={{ title: '管理', href: null }}
       />
     </Tabs>
   );
