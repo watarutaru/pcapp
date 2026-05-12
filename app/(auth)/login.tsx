@@ -6,7 +6,6 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { signInWithPassword, resetPassword } from '@/lib/auth';
-import { Colors } from '@/constants/colors';
 import LogoSvg from '@/components/LogoSvg';
 
 export default function LoginScreen() {
@@ -55,50 +54,62 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* タイトル */}
         <View style={styles.titleBlock}>
           <Text style={styles.brandTitle}>Piercing Cyclone</Text>
           <Text style={styles.brandSubtitle}>OFFICIAL APP</Text>
         </View>
 
-        <LogoSvg size={140} />
+        {/* ロゴ */}
+        <LogoSvg size={174} />
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="メールアドレス"
-            placeholderTextColor={Colors.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="パスワード"
-            placeholderTextColor={Colors.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+        {/* フォーム */}
+        <View style={styles.formGroup}>
+          {/* メールアドレス */}
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>メールアドレス</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
 
-          <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.primaryButtonText}>ログイン</Text>
-            )}
-          </TouchableOpacity>
+          {/* パスワード */}
+          <View style={styles.field}>
+            <View style={styles.fieldLabelRow}>
+              <Text style={styles.fieldLabel}>パスワード</Text>
+              <TouchableOpacity onPress={handleResetPassword} disabled={loading}>
+                <Text style={styles.forgotText}>?お忘れの方</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
 
-          <TouchableOpacity style={styles.textLink} onPress={handleResetPassword} disabled={loading}>
-            <Text style={styles.textLinkText}>パスワードを忘れた方はこちら</Text>
-          </TouchableOpacity>
+          {/* ログインボタン */}
+          <View style={styles.buttonWrap}>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+              {loading
+                ? <ActivityIndicator color="#fff" />
+                : <Text style={styles.loginButtonText}>ログイン</Text>
+              }
+            </TouchableOpacity>
+          </View>
+
+          {/* 会員登録 */}
+          <Link href="/(auth)/signup" asChild>
+            <TouchableOpacity style={styles.signupWrap}>
+              <Text style={styles.signupText}>会員登録はこちら</Text>
+            </TouchableOpacity>
+          </Link>
         </View>
-
-        <Link href="/(auth)/signup" asChild>
-          <TouchableOpacity style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>ファンクラブに入会する</Text>
-          </TouchableOpacity>
-        </Link>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -107,15 +118,15 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#fdfdfd',
   },
   inner: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 46,
     paddingVertical: 48,
-    gap: 32,
+    gap: 36,
   },
   titleBlock: {
     alignItems: 'center',
@@ -139,89 +150,61 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textAlign: 'center',
   },
-  form: {
+  formGroup: {
     width: '100%',
-    gap: 0,
+    gap: 16,
   },
-  primaryButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 60,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+  field: {
+    gap: 6,
+  },
+  fieldLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    width: 230,
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+  fieldLabel: {
+    fontFamily: fonts.regular,
+    fontSize: 11,
+    color: '#222',
   },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: Colors.textSecondary,
-    borderRadius: 50,
-    paddingVertical: 13,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    width: 230,
-  },
-  secondaryButtonText: {
-    color: Colors.text,
-    fontSize: 16,
-    fontWeight: '400',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    paddingHorizontal: 40,
-    gap: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.text,
-    textAlign: 'center',
-  },
-  description: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  backButtonText: {
-    color: Colors.textSecondary,
-    fontSize: 16,
-  },
-  heading: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  subheading: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 32,
+  forgotText: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: '#222',
   },
   input: {
-    backgroundColor: Colors.background,
+    height: 44,
     borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: Colors.text,
-    fontSize: 16,
-    marginBottom: 16,
+    borderColor: '#222',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    backgroundColor: 'transparent',
+    color: '#222',
+    fontSize: 14,
   },
-  textLink: {
-    marginTop: 20,
+  buttonWrap: {
+    paddingTop: 16,
+  },
+  loginButton: {
+    backgroundColor: '#222',
+    borderRadius: 60,
+    paddingVertical: 12,
+    alignItems: 'center',
+    width: '100%',
+  },
+  loginButtonText: {
+    fontFamily: fonts.jpBold,
+    fontSize: 16,
+    color: '#fff',
+    lineHeight: 24,
+  },
+  signupWrap: {
     alignItems: 'center',
   },
-  textLinkText: {
-    color: Colors.textSecondary,
-    fontSize: 13,
+  signupText: {
+    fontFamily: fonts.jpRegular,
+    fontSize: 14,
+    color: '#898989',
+    lineHeight: 14,
   },
 });
