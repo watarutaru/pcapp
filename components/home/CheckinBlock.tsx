@@ -1,5 +1,5 @@
 import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { IcQR } from '@/components/icons';
 import { fonts } from '@/lib/fonts';
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 export default function CheckinBlock({ onPress, style }: Props) {
   return (
     <TouchableOpacity style={[styles.container, style]} onPress={onPress} activeOpacity={0.8}>
-      <Feather name="maximize" size={27} color="#fff" />
+      <IcQR size={27} color="#fff" />
       <Text style={styles.label}>チェックイン</Text>
     </TouchableOpacity>
   );
