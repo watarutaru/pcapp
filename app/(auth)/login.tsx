@@ -2,7 +2,7 @@ import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert, ScrollView,
+  KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { signInWithPassword, resetPassword } from '@/lib/auth';
@@ -12,33 +12,39 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
 
   async function handleLogin() {
+    setError('');
+    setInfo('');
     if (!email || !password) {
-      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
+      setError('メールアドレスとパスワードを入力してください');
       return;
     }
     setLoading(true);
     try {
       await signInWithPassword(email, password);
     } catch (e) {
-      Alert.alert('ログイン失敗', e instanceof Error ? e.message : 'エラーが発生しました');
+      setError(e instanceof Error ? e.message : 'ログインに失敗しました');
     } finally {
       setLoading(false);
     }
   }
 
   async function handleResetPassword() {
+    setError('');
+    setInfo('');
     if (!email) {
-      Alert.alert('エラー', 'メールアドレスを入力してください');
+      setError('メールアドレスを入力してください');
       return;
     }
     setLoading(true);
     try {
       await resetPassword(email);
-      Alert.alert('送信しました', `${email} にパスワード再設定メールを送りました。`);
+      setInfo(`${email} にパスワード再設定メールを送りました`);
     } catch (e) {
-      Alert.alert('エラー', e instanceof Error ? e.message : 'エラーが発生しました');
+      setError(e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
@@ -81,8 +87,11 @@ export default function LoginScreen() {
           <View style={styles.field}>
             <View style={styles.fieldLabelRow}>
               <Text style={styles.fieldLabel}>パスワード</Text>
-              <TouchableOpacity onPress={handleResetPassword} disabled={loading}>
-                <Text style={styles.forgotText}>?お忘れの方</Text>
+              <TouchableOpacity style={styles.forgotLink} onPress={handleResetPassword} disabled={loading}>
+                <View style={styles.forgotIcon}>
+                  <Text style={styles.forgotIconText}>?</Text>
+                </View>
+                <Text style={styles.forgotText}>お忘れの方</Text>
               </TouchableOpacity>
             </View>
             <TextInput
@@ -92,6 +101,10 @@ export default function LoginScreen() {
               secureTextEntry
             />
           </View>
+
+          {/* エラー・情報メッセージ */}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {info ? <Text style={styles.infoText}>{info}</Text> : null}
 
           {/* ログインボタン */}
           <View style={styles.buttonWrap}>
@@ -167,6 +180,26 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#222',
   },
+  forgotLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  forgotIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#222',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  forgotIconText: {
+    fontFamily: fonts.regular,
+    fontSize: 10,
+    color: '#222',
+    lineHeight: 12,
+  },
   forgotText: {
     fontFamily: fonts.regular,
     fontSize: 12,
@@ -206,5 +239,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#898989',
     lineHeight: 14,
+  },
+  errorText: {
+    fontFamily: fonts.jpRegular,
+    fontSize: 13,
+    color: '#c0392b',
+    textAlign: 'center',
+  },
+  infoText: {
+    fontFamily: fonts.jpRegular,
+    fontSize: 13,
+    color: '#27ae60',
+    textAlign: 'center',
   },
 });
