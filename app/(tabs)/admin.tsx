@@ -4,6 +4,7 @@ import {
   ScrollView, TextInput, Modal, Switch, Platform, KeyboardAvoidingView,
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
+import { supabase } from '@/lib/supabase';
 import { getLives, checkinToLive } from '@/lib/lives';
 import { addPoints, getProfile } from '@/lib/profiles';
 import { getMysteries, createMystery, updateMystery, deleteMystery } from '@/lib/mysteries';
@@ -16,6 +17,7 @@ type QrStep = 'scan' | 'select_live';
 const EMPTY_FORM = { vol: '', title: '', content: '', image_url: '', hint: '', answer: '', is_published: false };
 
 export default function AdminScreen() {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [adminTab, setAdminTab] = useState<AdminTab>('qr');
 
   // QRスキャン
@@ -35,6 +37,14 @@ export default function AdminScreen() {
   const [saving, setSaving] = useState(false);
   const [answerCandidates, setAnswerCandidates] = useState<Array<{ text: string; selected: boolean }>>([]);
   const [candidatesShown, setCandidatesShown] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { setIsAdmin(false); return; }
+      const profile = await getProfile(user.id);
+      setIsAdmin(profile?.role === 'admin');
+    });
+  }, []);
 
   useEffect(() => {
     Camera.requestCameraPermissionsAsync().then(({ status }) => {
@@ -255,6 +265,16 @@ export default function AdminScreen() {
   }
 
   // ── レンダリング ──────────────────────────
+  if (isAdmin === null) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator color={Colors.primary} size="large" />
+      </View>
+    );
+  }
+
+  if (!isAdmin) return null;
+
   return (
     <View style={styles.container}>
       {/* 管理タブ切り替え */}
