@@ -2,7 +2,7 @@ import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -13,29 +13,30 @@ export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
 
   async function handleUpdate() {
+    setError('');
     if (!password || !confirm) {
-      Alert.alert('エラー', 'パスワードを入力してください');
+      setError('パスワードを入力してください');
       return;
     }
     if (password !== confirm) {
-      Alert.alert('エラー', 'パスワードが一致しません');
+      setError('パスワードが一致しません');
       return;
     }
     if (password.length < 8) {
-      Alert.alert('エラー', 'パスワードは8文字以上で入力してください');
+      setError('パスワードは8文字以上で入力してください');
       return;
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      Alert.alert('完了', 'パスワードを変更しました', [
-        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
-      ]);
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) throw updateError;
+      setDone(true);
     } catch (e) {
-      Alert.alert('エラー', e instanceof Error ? e.message : 'エラーが発生しました');
+      setError(e instanceof Error ? e.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
@@ -57,35 +58,50 @@ export default function ResetPasswordScreen() {
         <View style={styles.formGroup}>
           <Text style={styles.heading}>パスワードの再設定</Text>
 
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>新しいパスワード</Text>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoFocus
-            />
-          </View>
+          {done ? (
+            <>
+              <Text style={styles.infoText}>パスワードを変更しました</Text>
+              <View style={styles.buttonWrap}>
+                <TouchableOpacity style={styles.submitButton} onPress={() => router.replace('/(auth)/login')}>
+                  <Text style={styles.submitButtonText}>ログイン画面へ</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>新しいパスワード</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  autoFocus
+                />
+              </View>
 
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>新しいパスワード（確認）</Text>
-            <TextInput
-              style={styles.input}
-              value={confirm}
-              onChangeText={setConfirm}
-              secureTextEntry
-            />
-          </View>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>新しいパスワード（確認）</Text>
+                <TextInput
+                  style={styles.input}
+                  value={confirm}
+                  onChangeText={setConfirm}
+                  secureTextEntry
+                />
+              </View>
 
-          <View style={styles.buttonWrap}>
-            <TouchableOpacity style={styles.submitButton} onPress={handleUpdate} disabled={loading}>
-              {loading
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.submitButtonText}>パスワードを変更する</Text>
-              }
-            </TouchableOpacity>
-          </View>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+              <View style={styles.buttonWrap}>
+                <TouchableOpacity style={styles.submitButton} onPress={handleUpdate} disabled={loading}>
+                  {loading
+                    ? <ActivityIndicator color="#fff" />
+                    : <Text style={styles.submitButtonText}>パスワードを変更する</Text>
+                  }
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -169,5 +185,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     lineHeight: 24,
+  },
+  errorText: {
+    fontFamily: fonts.jpRegular,
+    fontSize: 13,
+    color: '#c0392b',
+    textAlign: 'center',
+  },
+  infoText: {
+    fontFamily: fonts.jpRegular,
+    fontSize: 13,
+    color: '#27ae60',
+    textAlign: 'center',
   },
 });
