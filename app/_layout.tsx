@@ -15,17 +15,6 @@ import {
   Lato_900Black,
 } from '@expo-google-fonts/lato';
 
-async function handleAuthUrl(url: string) {
-  const fragment = url.split('#')[1];
-  if (!fragment) return;
-  const params = new URLSearchParams(fragment);
-  const access_token = params.get('access_token');
-  const refresh_token = params.get('refresh_token');
-  if (access_token && refresh_token) {
-    await supabase.auth.setSession({ access_token, refresh_token });
-  }
-}
-
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
@@ -34,6 +23,21 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const [fontsLoaded] = useFonts({ Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black });
+
+  async function handleAuthUrl(url: string) {
+    const fragment = url.split('#')[1];
+    if (!fragment) return;
+    const params = new URLSearchParams(fragment);
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    const type = params.get('type');
+    if (access_token && refresh_token) {
+      await supabase.auth.setSession({ access_token, refresh_token });
+      if (type === 'recovery') {
+        router.replace('/(auth)/reset-password');
+      }
+    }
+  }
 
   useEffect(() => {
     async function initialize() {
@@ -48,6 +52,12 @@ export default function RootLayout() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (event === 'INITIAL_SESSION') setInitialized(true);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        router.replace('/(auth)/reset-password');
+        return;
+      }
+
       if (session?.user) {
         try {
           const token = await registerForPushNotifications();
@@ -93,6 +103,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (!initialized) return;
     const inAuth = segments[0] === '(auth)';
+    const inReset = inAuth && segments[1] === 'reset-password';
+    if (inReset) return; // パスワードリセット中は自動遷移をスキップ
     if (!session && !inAuth) {
       router.replace('/(auth)/login');
     } else if (session && inAuth) {
