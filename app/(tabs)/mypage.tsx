@@ -185,6 +185,11 @@ export default function MyPageScreen() {
 
           {/* リンク */}
           <View style={styles.linkList}>
+            {profile?.role === 'admin' && (
+              <TouchableOpacity onPress={() => router.push('/(tabs)/admin')} activeOpacity={0.7}>
+                <Text style={styles.linkText}>管理ページ</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity activeOpacity={0.7}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
