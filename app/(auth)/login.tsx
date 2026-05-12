@@ -2,17 +2,14 @@ import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { signInWithPassword, resetPassword } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
 import LogoSvg from '@/components/LogoSvg';
 
-type ViewType = 'welcome' | 'login';
-
 export default function LoginScreen() {
-  const [view, setView] = useState<ViewType>('welcome');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,19 +45,24 @@ export default function LoginScreen() {
     }
   }
 
-  if (view === 'login') {
-    return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={styles.inner}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.inner}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setView('welcome')}>
-            <Text style={styles.backButtonText}>← 戻る</Text>
-          </TouchableOpacity>
+        <View style={styles.titleBlock}>
+          <Text style={styles.brandTitle}>Piercing Cyclone</Text>
+          <Text style={styles.brandSubtitle}>OFFICIAL APP</Text>
+        </View>
 
-          <Text style={styles.heading}>ログイン</Text>
+        <LogoSvg size={140} />
 
+        <View style={styles.form}>
           <TextInput
             style={styles.input}
             placeholder="メールアドレス"
@@ -69,7 +71,6 @@ export default function LoginScreen() {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            autoFocus
           />
           <TextInput
             style={styles.input}
@@ -92,33 +93,14 @@ export default function LoginScreen() {
             <Text style={styles.textLinkText}>パスワードを忘れた方はこちら</Text>
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    );
-  }
 
-  return (
-    <View style={styles.welcome}>
-      <View style={styles.welcomeContent}>
-        <View style={styles.titleBlock}>
-          <Text style={styles.brandTitle}>Piercing Cyclone</Text>
-          <Text style={styles.brandSubtitle}>OFFICIAL APP</Text>
-        </View>
-
-        <LogoSvg size={175} />
-
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => setView('login')}>
-            <Text style={styles.primaryButtonText}>ログイン</Text>
+        <Link href="/(auth)/signup" asChild>
+          <TouchableOpacity style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>ファンクラブに入会する</Text>
           </TouchableOpacity>
-
-          <Link href="/(auth)/signup" asChild>
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>ファンクラブに入会する</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-      </View>
-    </View>
+        </Link>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -127,16 +109,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.surface,
   },
-  welcome: {
-    flex: 1,
-    backgroundColor: Colors.surface,
+  inner: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  welcomeContent: {
-    alignItems: 'center',
-    gap: 36,
-    width: 283,
+    paddingHorizontal: 32,
+    paddingVertical: 48,
+    gap: 32,
   },
   titleBlock: {
     alignItems: 'center',
@@ -160,10 +139,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textAlign: 'center',
   },
-  buttonGroup: {
-    alignItems: 'center',
-    gap: 16,
-    width: 230,
+  form: {
+    width: '100%',
+    gap: 0,
   },
   primaryButton: {
     backgroundColor: Colors.primary,
@@ -211,17 +189,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    backgroundColor: Colors.surface,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 60,
-    left: 24,
   },
   backButtonText: {
     color: Colors.textSecondary,
