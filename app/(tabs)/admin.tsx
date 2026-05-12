@@ -4,7 +4,6 @@ import {
   ScrollView, TextInput, Modal, Switch, Platform, KeyboardAvoidingView,
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
-import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { getLives, checkinToLive } from '@/lib/lives';
 import { addPoints, getProfile } from '@/lib/profiles';
@@ -12,13 +11,12 @@ import { getMysteries, createMystery, updateMystery, deleteMystery } from '@/lib
 import { Live, Mystery } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 
-type AdminTab = 'qr' | 'nazo' | 'dev';
+type AdminTab = 'qr' | 'nazo';
 type QrStep = 'scan' | 'select_live';
 
 const EMPTY_FORM = { vol: '', title: '', content: '', image_url: '', hint: '', answer: '', is_published: false };
 
 export default function AdminScreen() {
-  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [adminTab, setAdminTab] = useState<AdminTab>('qr');
 
@@ -297,14 +295,6 @@ export default function AdminScreen() {
             ナゾ管理
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.adminTab, adminTab === 'dev' && styles.adminTabActive]}
-          onPress={() => setAdminTab('dev')}
-        >
-          <Text style={[styles.adminTabText, adminTab === 'dev' && styles.adminTabTextActive]}>
-            Dev
-          </Text>
-        </TouchableOpacity>
       </View>
 
       {/* QRスキャン */}
@@ -433,21 +423,6 @@ export default function AdminScreen() {
           )}
           <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
             <Text style={styles.addButtonText}>＋ 謎を追加</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Dev tools */}
-      {adminTab === 'dev' && (
-        <View style={styles.devContainer}>
-          <Text style={styles.devTitle}>Developer Tools</Text>
-          <TouchableOpacity
-            style={styles.devButton}
-            onPress={() => router.push('/component-library')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.devButtonText}>Component Library</Text>
-            <Text style={styles.devButtonSub}>実装済みコンポーネントを一覧表示</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -841,36 +816,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 20,
-  },
-
-  // Dev
-  devContainer: {
-    flex: 1,
-    padding: 24,
-    gap: 16,
-  },
-  devTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  devButton: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: 20,
-    gap: 4,
-  },
-  devButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  devButtonSub: {
-    fontSize: 12,
-    color: Colors.textSecondary,
   },
 });
