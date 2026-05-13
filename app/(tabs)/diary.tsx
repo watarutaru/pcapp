@@ -1,14 +1,15 @@
 import { fonts } from '@/lib/fonts';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   RefreshControl, ActivityIndicator, Image,
 } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { getDiaries } from '@/lib/diaries';
 import { Diary } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
+import ContentModal from '@/components/layout/ContentModal';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -33,11 +34,11 @@ const AUTHOR_CONFIG = {
 } as const;
 
 export default function DiaryScreen() {
-  const router = useRouter();
   const [diaries, setDiaries] = useState<Diary[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { readIds, refresh: refreshUnread } = useUnread();
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const { readIds, refresh: refreshUnread, markRead } = useUnread();
 
   const load = useCallback(async () => {
     const data = await getDiaries();
@@ -55,6 +56,18 @@ export default function DiaryScreen() {
     load();
     refreshUnread();
   }, [load, refreshUnread]));
+
+  const selectedDiary = selectedIndex >= 0 ? diaries[selectedIndex] : null;
+
+  useEffect(() => {
+    if (selectedDiary) {
+      markRead('diary', selectedDiary.id);
+    }
+  }, [selectedDiary?.id]);
+
+  const handleClose = () => setSelectedIndex(-1);
+  const handlePrev = () => setSelectedIndex(i => Math.max(0, i - 1));
+  const handleNext = () => setSelectedIndex(i => Math.min(diaries.length - 1, i + 1));
 
   if (loading) {
     return (
@@ -77,7 +90,7 @@ export default function DiaryScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const config = AUTHOR_CONFIG[item.author];
           const isUnread = !readIds.diary.has(item.id);
           const preview = item.content.length > 60
@@ -88,7 +101,7 @@ export default function DiaryScreen() {
             <View style={styles.cardWrapper}>
               <TouchableOpacity
                 style={styles.card}
-                onPress={() => router.push(`/diary/${item.id}` as any)}
+                onPress={() => setSelectedIndex(index)}
                 activeOpacity={0.8}
               >
                 {/* ヘッダー行：日付 + 著者名 + アバター */}
@@ -111,7 +124,38 @@ export default function DiaryScreen() {
           <Text style={styles.emptyText}>日記はまだありません</Text>
         }
       />
+
+      {/* 詳細モーダル */}
+      <ContentModal
+        visible={selectedIndex >= 0}
+        onClose={handleClose}
+        title="JOURNAL"
+        hasPrev={selectedIndex > 0}
+        hasNext={selectedIndex < diaries.length - 1}
+        onPrev={handlePrev}
+        onNext={handleNext}
+      >
+        {selectedDiary && (
+          <DiaryModalContent diary={selectedDiary} />
+        )}
+      </ContentModal>
     </View>
+  );
+}
+
+function DiaryModalContent({ diary }: { diary: Diary }) {
+  const config = AUTHOR_CONFIG[diary.author];
+  return (
+    <>
+      <View style={modalStyles.metaRow}>
+        <Text style={modalStyles.dateText}>{formatDate(diary.created_at)}</Text>
+        <View style={modalStyles.authorGroup}>
+          <Text style={modalStyles.authorName}>{config.label}</Text>
+          <Image source={config.avatar} style={modalStyles.avatar} />
+        </View>
+      </View>
+      <Text style={modalStyles.contentText}>{diary.content}</Text>
+    </>
   );
 }
 
@@ -205,5 +249,40 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: 14,
     marginTop: 40,
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateText: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: '#222',
+  },
+  authorGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  authorName: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: '#0a0a0a',
+    lineHeight: 28,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  contentText: {
+    fontFamily: fonts.jpLight,
+    fontSize: 14,
+    color: '#222',
+    lineHeight: 23,
   },
 });
