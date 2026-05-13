@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, Image, StyleSheet, ViewStyle, ImageSourcePropType } from 'react-native';
 import { fonts } from '@/lib/fonts';
 import Tag from '@/components/ui/Tag';
 
@@ -11,6 +11,7 @@ type Props = {
   venue: string;
   time?: string;
   tag?: string;
+  illustrationSource?: ImageSourcePropType;
   style?: ViewStyle;
 };
 
@@ -21,12 +22,13 @@ export default function LiveCard({
   venue,
   time,
   tag,
+  illustrationSource,
   style,
 }: Props) {
   const isUpcoming = variant === 'upcoming';
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, illustrationSource && styles.containerWithIllust, style]}>
       {tag && <Tag label={tag} variant={isUpcoming ? 'primary' : 'strong'} />}
       <View style={styles.info}>
         <View style={styles.titleSection}>
@@ -38,6 +40,13 @@ export default function LiveCard({
           {isUpcoming && time && <Text style={styles.detailEn}>{time}</Text>}
         </View>
       </View>
+      {illustrationSource && (
+        <Image
+          source={illustrationSource}
+          style={styles.illustration}
+          resizeMode="contain"
+        />
+      )}
     </View>
   );
 }
@@ -50,6 +59,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     gap: 8,
+  },
+  containerWithIllust: {
+    overflow: 'hidden',
   },
   info: {
     gap: 12,
@@ -80,5 +92,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 11,
     color: '#222',
+  },
+  illustration: {
+    position: 'absolute',
+    right: -20,
+    bottom: 0,
+    width: 91,
+    height: 107,
+    transform: [{ rotate: '-19deg' }],
   },
 });

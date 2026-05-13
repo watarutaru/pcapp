@@ -1,45 +1,22 @@
-import { fonts } from '@/lib/fonts';
 import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
-  ActivityIndicator, TouchableOpacity, Image,
+  ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SvgXml } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
-import { getOrCreateProfile } from '@/lib/profiles';
 import { getNextLive } from '@/lib/lives';
 import { Profile, Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
+import HomeHeader from '@/components/layout/HomeHeader';
+import MembershipCard from '@/components/cards/MembershipCard';
+import StatusBlock from '@/components/home/StatusBlock';
+import CheckinBlock from '@/components/home/CheckinBlock';
+import LiveCard from '@/components/cards/LiveCard';
+import ContentHeading from '@/components/ui/ContentHeading';
+import IcBicycle from '@/components/icons/IcBicycle';
 
-const personSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="12" cy="8" r="4" stroke="#222222" stroke-width="1.5"/>
-  <path d="M4 20c0-3.866 3.582-7 8-7s8 3.134 8 7" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
-</svg>`;
-
-const qrSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="white" stroke-width="1.5"/>
-  <rect x="5.5" y="5.5" width="3" height="3" fill="white"/>
-  <rect x="13" y="3" width="8" height="8" rx="1.5" stroke="white" stroke-width="1.5"/>
-  <rect x="15.5" y="5.5" width="3" height="3" fill="white"/>
-  <rect x="3" y="13" width="8" height="8" rx="1.5" stroke="white" stroke-width="1.5"/>
-  <rect x="5.5" y="15.5" width="3" height="3" fill="white"/>
-  <rect x="13" y="13" width="3.5" height="3.5" fill="white"/>
-  <rect x="18" y="13" width="3" height="3.5" fill="white"/>
-  <rect x="13" y="18" width="3.5" height="3" fill="white"/>
-  <rect x="18" y="18" width="3" height="3" fill="white"/>
-</svg>`;
-
-const bicycleNavSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="5.5" cy="16" r="3.5" stroke="#222222" stroke-width="1.5"/>
-  <circle cx="18.5" cy="16" r="3.5" stroke="#222222" stroke-width="1.5"/>
-  <path d="M5.5 16L9.5 9H14.5L18.5 16" stroke="#222222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M9.5 9L12 16" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M13 7H16" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M14.5 7V9" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
-</svg>`;
-
-function formatEventDate(dateStr: string): string {
+function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -48,11 +25,19 @@ function formatEventDate(dateStr: string): string {
   return `${year}.${month}.${day} (${weekdays[d.getDay()]})`;
 }
 
-function formatEventTime(dateStr: string): string {
+function formatTime(dateStr: string): string {
   const d = new Date(dateStr);
   const h = String(d.getHours()).padStart(2, '0');
   const m = String(d.getMinutes()).padStart(2, '0');
-  return `開演 ${h}:${m}`;
+  return `${h}:${m}`;
+}
+
+function formatLiveTime(live: Live): string {
+  const start = formatTime(live.date);
+  if (live.open_time) {
+    return `開場 ${formatTime(live.open_time)} / 開演 ${start}`;
+  }
+  return `開演 ${start}`;
 }
 
 export default function HomeScreen() {
@@ -140,88 +125,52 @@ export default function HomeScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       showsVerticalScrollIndicator={false}
     >
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.accountButton}
-          onPress={() => router.push('/(tabs)/mypage' as any)}
-          activeOpacity={0.7}
-        >
-          <SvgXml xml={personSvg} width={20} height={20} />
-        </TouchableOpacity>
-      </View>
+      <HomeHeader onAccountPress={() => router.push('/(tabs)/mypage' as any)} />
 
-      {/* 会員カード */}
-      <View style={styles.memberCard}>
-        <View style={styles.memberCardTop}>
-          <Text style={styles.memberNumber}>{memberId}</Text>
-          <Text style={styles.nickname}>{profile.nickname}</Text>
-        </View>
-        <Image
-          source={require('@/assets/images/bicycle.png')}
-          style={styles.bicycleImage}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* STAGE / QR タイル */}
-      <View style={styles.tilesRow}>
-        <View style={styles.infoTile}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>STAGE</Text>
-            <Text style={styles.infoValue}>{profile.stage}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>POINTS</Text>
-            <View style={styles.pointsRow}>
-              <Text style={styles.pointsNumber}>{profile.total_points}</Text>
-              <Text style={styles.pointsUnit}> pt</Text>
-            </View>
+      <View style={styles.body}>
+        <View style={styles.topSection}>
+          <MembershipCard
+            memberNumber={memberId}
+            nickname={profile.nickname}
+            style={styles.memberCard}
+          />
+          <View style={styles.tilesRow}>
+            <StatusBlock
+              stage={profile.stage}
+              points={profile.total_points}
+              style={styles.tile}
+            />
+            <CheckinBlock
+              onPress={() => router.push('/(tabs)/mypage' as any)}
+              style={styles.tile}
+            />
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.qrTile}
-          onPress={() => router.push('/(tabs)/mypage' as any)}
-          activeOpacity={0.8}
-        >
-          <SvgXml xml={qrSvg} width={36} height={36} />
-          <Text style={styles.qrLabel}>チェックイン</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* NEXT WAVE */}
-      <View style={styles.nextWaveSection}>
-        <View style={styles.nextWaveHeaderRow}>
-          <SvgXml xml={bicycleNavSvg} width={24} height={24} />
-          <Text style={styles.nextWaveTitle}>NEXT WAVE</Text>
-        </View>
-
-        {nextLive ? (
-          <TouchableOpacity
-            style={styles.eventCard}
-            onPress={() => router.push(`/live/${nextLive.id}` as any)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.eventInfo}>
-              <Text style={styles.eventDate}>{formatEventDate(nextLive.date)}</Text>
-              <Text style={styles.eventTitle} numberOfLines={2}>{nextLive.title}</Text>
-              <Text style={styles.eventVenue}>{nextLive.venue}</Text>
-              <Text style={styles.eventTime}>{formatEventTime(nextLive.date)}</Text>
-            </View>
-            <View style={styles.illustContainer}>
-              <Image
-                source={require('@/assets/images/live-illust.png')}
-                style={styles.liveIllust}
-                resizeMode="contain"
+        <View style={styles.nextWaveSection}>
+          <ContentHeading
+            label="NEXT WAVE"
+            icon={<IcBicycle size={24} color="#222" />}
+          />
+          {nextLive ? (
+            <TouchableOpacity
+              onPress={() => router.push(`/live/${nextLive.id}` as any)}
+              activeOpacity={0.8}
+            >
+              <LiveCard
+                title={nextLive.title}
+                date={formatDate(nextLive.date)}
+                venue={nextLive.venue}
+                time={formatLiveTime(nextLive)}
+                illustrationSource={require('@/assets/images/live-illust.png')}
               />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>直近の予定はありません</Text>
             </View>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>直近の予定はありません</Text>
-          </View>
-        )}
+          )}
+        </View>
       </View>
     </ScrollView>
   );
@@ -245,187 +194,27 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: 16,
   },
-  header: {
-    paddingTop: 56,
+  body: {
     paddingHorizontal: 24,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    paddingVertical: 16,
+    gap: 40,
   },
-  accountButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
+  topSection: {
+    gap: 24,
   },
   memberCard: {
-    marginHorizontal: 24,
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    marginBottom: 24,
-  },
-  memberCardTop: {
-    paddingTop: 12,
-    paddingHorizontal: 24,
-  },
-  memberNumber: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: Colors.text,
-    letterSpacing: 0.2,
-    lineHeight: 20,
-  },
-  nickname: {
-    fontFamily: fonts.jpBold,
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    lineHeight: 32,
-  },
-  bicycleImage: {
     width: '100%',
-    aspectRatio: 350 / 168,
   },
   tilesRow: {
-    marginHorizontal: 24,
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 24,
   },
-  infoTile: {
+  tile: {
     flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#efefef',
-    minHeight: 80,
-    justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  infoLabel: {
-    fontFamily: fonts.condensed,
-    fontSize: 12,
-    color: Colors.textSecondary,
-    letterSpacing: 1,
-    lineHeight: 16,
-  },
-  infoValue: {
-    fontFamily: fonts.medium,
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.text,
-  },
-  pointsRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  pointsNumber: {
-    fontFamily: fonts.heavy,
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    letterSpacing: 0.36,
-  },
-  pointsUnit: {
-    fontFamily: fonts.medium,
-    fontSize: 15,
-    color: Colors.textSecondary,
-  },
-  qrTile: {
-    flex: 1,
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    minHeight: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 3,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  qrLabel: {
-    fontFamily: fonts.jpLight,
-    fontSize: 11,
-    color: '#fff',
+    width: undefined,
   },
   nextWaveSection: {
-    marginHorizontal: 24,
     gap: 8,
-  },
-  nextWaveHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    height: 30,
-  },
-  nextWaveTitle: {
-    fontFamily: fonts.condensedMedium,
-    fontSize: 18,
-    fontWeight: '500',
-    color: Colors.text,
-    letterSpacing: 1,
-    lineHeight: 18,
-  },
-  eventCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#efefef',
-    padding: 16,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  eventInfo: {
-    flex: 1,
-    gap: 6,
-    paddingRight: 8,
-  },
-  eventDate: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: Colors.text,
-  },
-  eventTitle: {
-    fontFamily: fonts.jpRegular,
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.text,
-  },
-  eventVenue: {
-    fontFamily: fonts.jpLight,
-    fontSize: 11,
-    color: Colors.textSecondary,
-  },
-  eventTime: {
-    fontFamily: fonts.regular,
-    fontSize: 11,
-    color: Colors.textSecondary,
-  },
-  illustContainer: {
-    width: 90,
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-  },
-  liveIllust: {
-    width: 91,
-    height: 107,
-    transform: [{ rotate: '-19deg' }],
   },
   emptyCard: {
     backgroundColor: Colors.surface,
