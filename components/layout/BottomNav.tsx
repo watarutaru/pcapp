@@ -4,12 +4,13 @@ import IcLive from '@/components/icons/IcLive';
 import IcDiary from '@/components/icons/IcDiary';
 import IcNazo from '@/components/icons/IcNazo';
 import IcMusic from '@/components/icons/IcMusic';
+import { NavIconVariant } from '@/components/icons/IcHome';
 
 export type NavTab = 'home' | 'live' | 'diary' | 'nazo' | 'music';
 
 type NavItem = {
   key: NavTab;
-  Icon: React.ComponentType<{ size?: number; color?: string }>;
+  Icon: React.ComponentType<{ size?: number; color?: string; variant?: NavIconVariant }>;
 };
 
 const NAV_ITEMS: NavItem[] = [
@@ -31,7 +32,6 @@ export default function BottomNav({ activeTab = 'home', onTabPress, style }: Pro
     <View style={[styles.container, style]}>
       {NAV_ITEMS.map(({ key, Icon }) => {
         const isActive = activeTab === key;
-        const color = isActive ? '#222' : '#898989';
         return (
           <TouchableOpacity
             key={key}
@@ -39,7 +39,7 @@ export default function BottomNav({ activeTab = 'home', onTabPress, style }: Pro
             onPress={() => onTabPress?.(key)}
             activeOpacity={0.7}
           >
-            <Icon size={32} color={color} />
+            <Icon size={32} color='#898989' variant={isActive ? 'color' : 'regular'} />
           </TouchableOpacity>
         );
       })}
