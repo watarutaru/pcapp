@@ -1,5 +1,5 @@
 import { fonts } from '@/lib/fonts';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   RefreshControl, ActivityIndicator, Image,
@@ -11,6 +11,8 @@ import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
+import ContentModal from '@/components/layout/ContentModal';
+import { LiveInformation } from '@/components/ui';
 
 type Tab = 'UPCOMING' | 'HISTORY';
 
@@ -40,7 +42,8 @@ export default function LiveScreen() {
   const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { readIds, refresh: refreshUnread } = useUnread();
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const { readIds, refresh: refreshUnread, markRead } = useUnread();
 
   const load = useCallback(async () => {
     const [livesData, { data: { user } }] = await Promise.all([
@@ -66,6 +69,25 @@ export default function LiveScreen() {
     refreshUnread();
   }, [load, refreshUnread]));
 
+  const now = new Date();
+  const filteredLives = lives.filter(l =>
+    tab === 'UPCOMING'
+      ? new Date(l.date) >= now
+      : new Date(l.date) < now
+  );
+
+  const selectedLive = selectedIndex >= 0 ? filteredLives[selectedIndex] : null;
+
+  useEffect(() => {
+    if (selectedLive) {
+      markRead('live', selectedLive.id);
+    }
+  }, [selectedLive?.id]);
+
+  const handleClose = () => setSelectedIndex(-1);
+  const handlePrev = () => setSelectedIndex(i => Math.max(0, i - 1));
+  const handleNext = () => setSelectedIndex(i => Math.min(filteredLives.length - 1, i + 1));
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -73,13 +95,6 @@ export default function LiveScreen() {
       </View>
     );
   }
-
-  const now = new Date();
-  const filteredLives = lives.filter(l =>
-    tab === 'UPCOMING'
-      ? new Date(l.date) >= now
-      : new Date(l.date) < now
-  );
 
   return (
     <View style={styles.container}>
@@ -113,14 +128,14 @@ export default function LiveScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const isCheckedIn = checkedInIds.has(item.id);
           const isUnread = !readIds.live.has(item.id);
           return (
             <View style={styles.cardWrapper}>
               <TouchableOpacity
                 style={styles.card}
-                onPress={() => router.push(`/live/${item.id}` as any)}
+                onPress={() => setSelectedIndex(index)}
                 activeOpacity={0.8}
               >
                 {isCheckedIn && (
@@ -161,7 +176,91 @@ export default function LiveScreen() {
           </Text>
         }
       />
+
+      {/* 詳細モーダル */}
+      <ContentModal
+        visible={selectedIndex >= 0}
+        onClose={handleClose}
+        title="LIVE"
+        hasPrev={selectedIndex > 0}
+        hasNext={selectedIndex < filteredLives.length - 1}
+        onPrev={handlePrev}
+        onNext={handleNext}
+      >
+        {selectedLive && (
+          <LiveModalContent
+            live={selectedLive}
+            isCheckedIn={checkedInIds.has(selectedLive.id)}
+            onCheckin={() => {
+              handleClose();
+              router.push('/qr-checkin' as any);
+            }}
+          />
+        )}
+      </ContentModal>
     </View>
+  );
+}
+
+function LiveModalContent({
+  live, isCheckedIn, onCheckin,
+}: {
+  live: Live;
+  isCheckedIn: boolean;
+  onCheckin: () => void;
+}) {
+  return (
+    <>
+      {isCheckedIn && (
+        <LinearGradient
+          colors={['#654cab', '#ea6025']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={modalStyles.draggedBadge}
+        >
+          <Text style={modalStyles.draggedText}>Dragged!</Text>
+        </LinearGradient>
+      )}
+
+      <View style={modalStyles.titleSection}>
+        <Text style={modalStyles.dateText}>{formatDate(live.date)}</Text>
+        <Text style={modalStyles.titleText}>{live.title}</Text>
+      </View>
+
+      <LiveInformation
+        venue={live.venue}
+        time={formatTime(live.date, live.open_time)}
+        ticket={live.ticket_info}
+        performers={live.artists}
+      />
+
+      {live.description ? (
+        <Text style={modalStyles.descriptionText}>{live.description}</Text>
+      ) : null}
+
+      {live.set_list ? (
+        <View style={modalStyles.setListBox}>
+          <Text style={modalStyles.setListTitle}>SET LIST</Text>
+          <Text style={modalStyles.setListContent}>{live.set_list}</Text>
+        </View>
+      ) : null}
+
+      <View style={modalStyles.checkinSection}>
+        {isCheckedIn ? (
+          <View style={modalStyles.checkedButton}>
+            <Text style={modalStyles.checkedButtonText}>参戦済み</Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={modalStyles.checkinButton}
+            onPress={onCheckin}
+            activeOpacity={0.8}
+          >
+            <Text style={modalStyles.checkinButtonText}>このライブにチェックインする</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </>
   );
 }
 
@@ -316,5 +415,88 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: 14,
     marginTop: 40,
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  draggedBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 2,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  draggedText: {
+    fontFamily: fonts.condensedBold,
+    fontSize: 10,
+    color: '#fff',
+    letterSpacing: 1,
+    lineHeight: 16,
+  },
+  titleSection: {
+    gap: 8,
+  },
+  dateText: {
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    color: Colors.text,
+  },
+  titleText: {
+    fontFamily: fonts.jpBold,
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#0a0a0a',
+    lineHeight: 28,
+  },
+  descriptionText: {
+    fontFamily: fonts.jpLight,
+    fontSize: 14,
+    color: '#364153',
+    lineHeight: 23,
+  },
+  setListBox: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  setListTitle: {
+    fontFamily: fonts.condensedMedium,
+    fontSize: 18,
+    color: '#222',
+    letterSpacing: 1,
+    lineHeight: 18,
+  },
+  setListContent: {
+    fontSize: 14,
+    color: '#364153',
+    lineHeight: 23,
+  },
+  checkinSection: {
+    paddingTop: 8,
+  },
+  checkinButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 60,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  checkinButtonText: {
+    fontFamily: fonts.jpBold,
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: -0.3,
+  },
+  checkedButton: {
+    backgroundColor: Colors.success,
+    borderRadius: 60,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  checkedButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
