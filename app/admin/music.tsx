@@ -1,68 +1,78 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Image, Platform, Switch,
+  TextInput, Alert, ActivityIndicator, Image, Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { getPcNazos, createPcNazo, updatePcNazo, deletePcNazo, uploadNazoImage } from '@/lib/pc-nazo';
-import { sendPushNotificationToAll } from '@/lib/notifications';
-import { PcNazo } from '@/lib/types';
+import { getMusic, createMusic, updateMusic, deleteMusic, uploadMusicJacket } from '@/lib/music';
+import { Music } from '@/lib/types';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
 import { Colors } from '@/constants/colors';
 import { fonts } from '@/lib/fonts';
 
+const TYPES = ['アルバム', 'シングル', 'EP'] as const;
+type MusicType = typeof TYPES[number];
+
 const INIT_FORM = {
   title: '',
-  date: '',
-  body: '',
-  answersRaw: '',
-  answerDisplay: '',
+  type: 'アルバム' as MusicType,
+  spotify_url: '',
+  apple_music_url: '',
+  youtube_music_url: '',
+  line_music_url: '',
+  sort_order: '',
 };
 
-export default function AdminNazoScreen() {
+const PLATFORMS = [
+  { key: 'spotify_url', label: 'Spotify' },
+  { key: 'apple_music_url', label: 'Apple Music' },
+  { key: 'youtube_music_url', label: 'YouTube Music' },
+  { key: 'line_music_url', label: 'LINE MUSIC' },
+] as const;
+
+export default function AdminMusicScreen() {
   const router = useRouter();
-  const [nazos, setNazos] = useState<PcNazo[]>([]);
+  const [musics, setMusics] = useState<Music[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'list' | 'form'>('list');
-  const [editingNazo, setEditingNazo] = useState<PcNazo | null>(null);
+  const [editingMusic, setEditingMusic] = useState<Music | null>(null);
   const [form, setForm] = useState(INIT_FORM);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageMime, setImageMime] = useState<string | undefined>(undefined);
-  const [sendNotif, setSendNotif] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
-    setNazos(await getPcNazos());
+    setMusics(await getMusic());
     setLoading(false);
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   function openNew() {
-    setEditingNazo(null);
+    setEditingMusic(null);
     setForm(INIT_FORM);
     setImageUri(null);
     setImageMime(undefined);
-    setSendNotif(false);
     setError('');
     setMode('form');
   }
 
-  function openEdit(nazo: PcNazo) {
-    setEditingNazo(nazo);
+  function openEdit(music: Music) {
+    setEditingMusic(music);
     setForm({
-      title: nazo.title,
-      date: nazo.date.slice(0, 10),
-      body: nazo.body,
-      answersRaw: nazo.correct_answers.join(', '),
-      answerDisplay: nazo.answer_display,
+      title: music.title,
+      type: (TYPES.includes(music.type as MusicType) ? music.type : 'アルバム') as MusicType,
+      spotify_url: music.spotify_url ?? '',
+      apple_music_url: music.apple_music_url ?? '',
+      youtube_music_url: music.youtube_music_url ?? '',
+      line_music_url: music.line_music_url ?? '',
+      sort_order: String(music.sort_order),
     });
-    setImageUri(nazo.image_url);
+    setImageUri(music.jacket_url);
     setImageMime(undefined);
-    setSendNotif(false);
     setError('');
     setMode('form');
   }
@@ -75,7 +85,7 @@ export default function AdminNazoScreen() {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.85,
+      quality: 0.9,
     });
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
@@ -85,52 +95,45 @@ export default function AdminNazoScreen() {
 
   async function handleSave() {
     setError('');
-    if (!form.title.trim() || !form.date.trim() || !form.body.trim()) {
-      setError('タイトル・日付・本文は必須です');
+    if (!form.title.trim()) {
+      setError('タイトルを入力してください');
       return;
     }
-    if (!imageUri) {
-      setError('画像を選択してください');
-      return;
-    }
-    if (!form.answersRaw.trim() || !form.answerDisplay.trim()) {
-      setError('正解リストと表示用正解は必須です');
+    const sortOrderNum = parseInt(form.sort_order, 10);
+    if (!form.sort_order || isNaN(sortOrderNum)) {
+      setError('表示順を数字で入力してください');
       return;
     }
 
     setSaving(true);
     try {
-      const correctAnswers = form.answersRaw.split(',').map(s => s.trim()).filter(Boolean);
-
-      let imageUrl = imageUri;
-      const isNewImage = editingNazo ? imageUri !== editingNazo.image_url : true;
-      if (isNewImage) {
-        imageUrl = await uploadNazoImage(imageUri, imageMime);
+      let jacketUrl: string | null = imageUri;
+      const isNewImage = editingMusic
+        ? imageUri !== editingMusic.jacket_url
+        : imageUri !== null;
+      if (isNewImage && imageUri) {
+        jacketUrl = await uploadMusicJacket(imageUri, imageMime);
       }
 
       const payload = {
         title: form.title.trim(),
-        date: form.date.trim(),
-        body: form.body.trim(),
-        image_url: imageUrl!,
-        correct_answers: correctAnswers,
-        answer_display: form.answerDisplay.trim(),
+        type: form.type,
+        jacket_url: jacketUrl,
+        spotify_url: form.spotify_url.trim() || null,
+        apple_music_url: form.apple_music_url.trim() || null,
+        youtube_music_url: form.youtube_music_url.trim() || null,
+        line_music_url: form.line_music_url.trim() || null,
+        sort_order: sortOrderNum,
       };
 
-      if (editingNazo) {
-        await updatePcNazo(editingNazo.id, payload);
+      if (editingMusic) {
+        await updateMusic(editingMusic.id, payload);
       } else {
-        await createPcNazo(payload);
-        if (sendNotif) {
-          await sendPushNotificationToAll(
-            '新しいPCなぞ',
-            `「${form.title.trim()}」が公開されました 🖥️`,
-          ).catch(() => {});
-        }
+        await createMusic(payload);
       }
       setForm(INIT_FORM);
       setImageUri(null);
-      setEditingNazo(null);
+      setEditingMusic(null);
       setMode('list');
       await load();
     } catch (e: unknown) {
@@ -141,16 +144,16 @@ export default function AdminNazoScreen() {
     }
   }
 
-  async function handleDelete(nazo: PcNazo) {
+  async function handleDelete(music: Music) {
     if (Platform.OS === 'web') {
-      if (!window.confirm(`「${nazo.title}」を削除しますか？`)) return;
-      try { await deletePcNazo(nazo.id); await load(); } catch { alert('削除に失敗しました'); }
+      if (!window.confirm(`「${music.title}」を削除しますか？`)) return;
+      try { await deleteMusic(music.id); await load(); } catch { alert('削除に失敗しました'); }
     } else {
-      Alert.alert('削除確認', `「${nazo.title}」を削除しますか？`, [
+      Alert.alert('削除確認', `「${music.title}」を削除しますか？`, [
         { text: 'キャンセル', style: 'cancel' },
         {
           text: '削除', style: 'destructive', onPress: async () => {
-            try { await deletePcNazo(nazo.id); await load(); }
+            try { await deleteMusic(music.id); await load(); }
             catch { Alert.alert('エラー', '削除に失敗しました'); }
           },
         },
@@ -163,12 +166,12 @@ export default function AdminNazoScreen() {
   }
 
   if (mode === 'form') {
-    const isEditing = editingNazo !== null;
+    const isEditing = editingMusic !== null;
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
         <Header
-          title={isEditing ? 'PCなぞ編集' : 'PCなぞ追加'}
-          onBack={() => { setMode('list'); setEditingNazo(null); setImageUri(null); setForm(INIT_FORM); setError(''); }}
+          title={isEditing ? 'Music編集' : 'Music追加'}
+          onBack={() => { setMode('list'); setEditingMusic(null); setImageUri(null); setForm(INIT_FORM); setError(''); }}
         />
 
         <View style={styles.formCard}>
@@ -176,29 +179,28 @@ export default function AdminNazoScreen() {
             <TextInput
               style={styles.input} value={form.title}
               onChangeText={v => setForm(f => ({ ...f, title: v }))}
-              placeholder="第1問" placeholderTextColor={Colors.textSecondary}
+              placeholder="例: Q" placeholderTextColor={Colors.textSecondary}
             />
           </Field>
-          <Field label="日付 * （例: 2026-05-01）">
-            <TextInput
-              style={styles.input} value={form.date}
-              onChangeText={v => setForm(f => ({ ...f, date: v }))}
-              placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textSecondary}
-              {...(Platform.OS === 'web' ? { type: 'date' } as any : {})}
-            />
+
+          <Field label="種別 *">
+            <View style={styles.typeRow}>
+              {TYPES.map(t => (
+                <TouchableOpacity
+                  key={t}
+                  style={[styles.typeBtn, form.type === t && styles.typeBtnActive]}
+                  onPress={() => setForm(f => ({ ...f, type: t }))}
+                >
+                  <Text style={[styles.typeBtnText, form.type === t && styles.typeBtnTextActive]}>{t}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </Field>
-          <Field label="本文 * （1行ヒントなど）">
-            <TextInput
-              style={styles.input} value={form.body}
-              onChangeText={v => setForm(f => ({ ...f, body: v }))}
-              placeholder="三つの扉の向こうに答えがある"
-              placeholderTextColor={Colors.textSecondary}
-            />
-          </Field>
-          <Field label="パズル画像 *">
+
+          <Field label="ジャケット画像">
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
               {imageUri ? (
-                <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="contain" />
+                <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
               ) : (
                 <Text style={styles.imagePickerText}>📷 カメラロールから選択</Text>
               )}
@@ -209,40 +211,29 @@ export default function AdminNazoScreen() {
               </TouchableOpacity>
             )}
           </Field>
-          <Field label="正解リスト * （カンマ区切り）">
+
+          <Field label="表示順 * （小さいほど上に表示）">
             <TextInput
-              style={styles.input} value={form.answersRaw}
-              onChangeText={v => setForm(f => ({ ...f, answersRaw: v }))}
-              placeholder="こたえ,答え,kotae" placeholderTextColor={Colors.textSecondary}
-            />
-            <Text style={styles.fieldHint}>スペース・大文字小文字・全角半角は自動で吸収されます</Text>
-          </Field>
-          <Field label="表示用正解 * （正解後に表示する答え）">
-            <TextInput
-              style={styles.input} value={form.answerDisplay}
-              onChangeText={v => setForm(f => ({ ...f, answerDisplay: v }))}
-              placeholder="こたえ" placeholderTextColor={Colors.textSecondary}
+              style={styles.input} value={form.sort_order}
+              onChangeText={v => setForm(f => ({ ...f, sort_order: v }))}
+              placeholder="1" placeholderTextColor={Colors.textSecondary}
+              keyboardType="number-pad"
             />
           </Field>
 
-          {!isEditing && (
-            <View style={styles.notifRow}>
-              <View style={styles.notifLabelGroup}>
-                <Text style={styles.fieldLabel}>プッシュ通知を送信する</Text>
-                {sendNotif && (
-                  <Text style={styles.notifPreview}>
-                    「{form.title.trim() || '(タイトル)'}」が公開されました 🖥️
-                  </Text>
-                )}
-              </View>
-              <Switch
-                value={sendNotif}
-                onValueChange={setSendNotif}
-                trackColor={{ false: Colors.border, true: Colors.primary }}
-                thumbColor="#fff"
+          {PLATFORMS.map(({ key, label }) => (
+            <Field key={key} label={`${label} URL（任意）`}>
+              <TextInput
+                style={styles.input}
+                value={form[key]}
+                onChangeText={v => setForm(f => ({ ...f, [key]: v }))}
+                placeholder="https://..."
+                placeholderTextColor={Colors.textSecondary}
+                autoCapitalize="none"
+                keyboardType="url"
               />
-            </View>
-          )}
+            </Field>
+          ))}
         </View>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -261,40 +252,35 @@ export default function AdminNazoScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="PCなぞ管理" onBack={() => router.replace('/(tabs)/admin' as any)} />
+      <Header title="Music管理" onBack={() => router.replace('/(tabs)/admin' as any)} />
 
       <View style={styles.flex}>
         <ScrollView contentContainerStyle={styles.list}>
-          {nazos.length === 0 && <Text style={styles.emptyText}>PC謎がありません</Text>}
-          {nazos.map(nazo => (
-            <View key={nazo.id} style={styles.row}>
-              {nazo.image_url ? (
-                <Image source={{ uri: nazo.image_url }} style={styles.rowThumb} resizeMode="cover" />
+          {musics.length === 0 && <Text style={styles.emptyText}>Musicがありません</Text>}
+          {musics.map(music => (
+            <View key={music.id} style={styles.row}>
+              {music.jacket_url ? (
+                <Image source={{ uri: music.jacket_url }} style={styles.rowThumb} resizeMode="cover" />
               ) : (
                 <View style={[styles.rowThumb, styles.rowThumbEmpty]}>
-                  <Text style={{ fontSize: 20 }}>🔐</Text>
+                  <Text style={{ fontSize: 20 }}>🎵</Text>
                 </View>
               )}
               <View style={styles.rowInfo}>
-                <Text style={styles.rowTitle}>{nazo.title}</Text>
-                <Text style={styles.rowSub}>
-                  {new Date(nazo.date).toLocaleDateString('ja-JP', {
-                    year: 'numeric', month: 'long', day: 'numeric',
-                  })}
-                </Text>
-                <Text style={styles.rowAnswer}>こたえ: {nazo.answer_display}</Text>
+                <Text style={styles.rowTitle}>{music.title}</Text>
+                <Text style={styles.rowSub}>{music.type}　順: {music.sort_order}</Text>
               </View>
-              <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(nazo)}>
+              <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(music)}>
                 <Text style={styles.editBtnText}>編集</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(nazo)}>
+              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(music)}>
                 <Text style={styles.deleteBtnText}>削除</Text>
               </TouchableOpacity>
             </View>
           ))}
         </ScrollView>
         <View style={styles.addWrapper}>
-          <Button label="＋ PCなぞを追加" onPress={openNew} />
+          <Button label="＋ Musicを追加" onPress={openNew} />
         </View>
       </View>
     </View>
@@ -314,7 +300,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
-
   list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
   emptyText: { color: Colors.textSecondary, fontSize: 15, textAlign: 'center', marginTop: 40 },
   row: {
@@ -326,8 +311,7 @@ const styles = StyleSheet.create({
   rowThumbEmpty: { backgroundColor: Colors.background, justifyContent: 'center', alignItems: 'center' },
   rowInfo: { flex: 1 },
   rowTitle: { color: Colors.text, fontSize: 15, fontWeight: '700', marginBottom: 2 },
-  rowSub: { color: Colors.textSecondary, fontSize: 12, marginBottom: 2 },
-  rowAnswer: { color: Colors.primary, fontSize: 12 },
+  rowSub: { color: Colors.textSecondary, fontSize: 12 },
   editBtn: {
     backgroundColor: Colors.primary + '22', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 6, marginRight: 6,
@@ -338,7 +322,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 6,
   },
   deleteBtnText: { color: Colors.error, fontSize: 13, fontWeight: '600' },
-
   addWrapper: { position: 'absolute', bottom: 24, left: 20, right: 20 },
 
   formScroll: { paddingBottom: 60 },
@@ -351,28 +334,26 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: Colors.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5,
   },
-  fieldHint: { color: Colors.textSecondary, fontSize: 11, marginTop: 6 },
   input: {
     backgroundColor: Colors.background, borderRadius: 10,
     borderWidth: 1, borderColor: Colors.border,
     color: Colors.text, fontSize: 15,
     paddingHorizontal: 14, paddingVertical: 12,
   },
+  typeRow: { flexDirection: 'row', gap: 8 },
+  typeBtn: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
+  typeBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  typeBtnText: { color: Colors.textSecondary, fontSize: 14 },
+  typeBtnTextActive: { color: '#fff', fontWeight: '700' },
   imagePicker: {
     backgroundColor: Colors.background, borderRadius: 10,
     borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed',
-    height: 180, justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
+    height: 160, justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
   },
   imagePickerText: { color: Colors.textSecondary, fontSize: 15 },
   imagePreview: { width: '100%', height: '100%' },
   imageChangeBtn: { marginTop: 8, alignSelf: 'flex-start' },
   imageChangeBtnText: { color: Colors.primary, fontSize: 13 },
-  notifRow: {
-    flexDirection: 'row', alignItems: 'flex-start',
-    justifyContent: 'space-between', paddingTop: 8,
-  },
-  notifLabelGroup: { flex: 1, marginRight: 12 },
-  notifPreview: { fontSize: 12, color: Colors.textSecondary, marginTop: 4, lineHeight: 18 },
   errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 20, marginTop: 12 },
   saveBtnWrapper: { marginHorizontal: 20, marginTop: 24 },
 });

@@ -59,6 +59,11 @@ export async function createPcNazo(input: CreatePcNazoInput): Promise<void> {
   if (error) throw error;
 }
 
+export async function updatePcNazo(id: string, input: Partial<CreatePcNazoInput & { image_url: string }>): Promise<void> {
+  const { error } = await supabase.from('pc_nazo').update(input).eq('id', id);
+  if (error) throw error;
+}
+
 export async function deletePcNazo(id: string): Promise<void> {
   const { error } = await supabase.from('pc_nazo').delete().eq('id', id);
   if (error) throw error;
