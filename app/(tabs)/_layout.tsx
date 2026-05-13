@@ -1,6 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
+import IcHome from '@/components/icons/IcHome';
+import IcLive from '@/components/icons/IcLive';
+import IcDiary from '@/components/icons/IcDiary';
+import IcNazo from '@/components/icons/IcNazo';
+import IcMusic from '@/components/icons/IcMusic';
 
 export default function TabsLayout() {
   const { unreadCounts } = useUnread();
@@ -18,7 +23,13 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'ホーム', tabBarLabel: 'ホーム' }}
+        options={{
+          title: 'ホーム',
+          tabBarLabel: 'ホーム',
+          tabBarIcon: ({ focused }) => (
+            <IcHome size={28} variant={focused ? 'color' : 'regular'} color='#898989' />
+          ),
+        }}
       />
       <Tabs.Screen
         name="live"
@@ -26,6 +37,9 @@ export default function TabsLayout() {
           title: 'ライブ',
           tabBarLabel: 'ライブ',
           tabBarBadge: unreadCounts.live > 0 ? unreadCounts.live : undefined,
+          tabBarIcon: ({ focused }) => (
+            <IcLive size={28} variant={focused ? 'color' : 'regular'} color='#898989' />
+          ),
         }}
       />
       <Tabs.Screen
@@ -34,6 +48,9 @@ export default function TabsLayout() {
           title: '交換日記',
           tabBarLabel: '日記',
           tabBarBadge: unreadCounts.diary > 0 ? unreadCounts.diary : undefined,
+          tabBarIcon: ({ focused }) => (
+            <IcDiary size={28} variant={focused ? 'color' : 'regular'} color='#898989' />
+          ),
         }}
       />
       <Tabs.Screen
@@ -42,11 +59,20 @@ export default function TabsLayout() {
           title: 'ナゾ',
           tabBarLabel: 'ナゾ',
           tabBarBadge: unreadCounts.mystery > 0 ? unreadCounts.mystery : undefined,
+          tabBarIcon: ({ focused }) => (
+            <IcNazo size={28} variant={focused ? 'color' : 'regular'} color='#898989' />
+          ),
         }}
       />
       <Tabs.Screen
         name="music"
-        options={{ title: '音楽', tabBarLabel: '音楽' }}
+        options={{
+          title: '音楽',
+          tabBarLabel: '音楽',
+          tabBarIcon: ({ focused }) => (
+            <IcMusic size={28} variant={focused ? 'color' : 'regular'} color='#898989' />
+          ),
+        }}
       />
       <Tabs.Screen
         name="mypage"
