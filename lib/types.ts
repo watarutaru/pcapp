@@ -78,6 +78,19 @@ export interface Mystery {
   created_at: string;
 }
 
+export interface Music {
+  id: string;
+  title: string;
+  type: string;
+  jacket_url: string | null;
+  spotify_url: string | null;
+  apple_music_url: string | null;
+  youtube_music_url: string | null;
+  line_music_url: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
 export type Stage = 'ROOKIE' | 'FAN' | 'SUPPORTER' | 'CYCLONER' | 'LEGEND';
 
 export const STAGE_THRESHOLDS: Record<Stage, number> = {

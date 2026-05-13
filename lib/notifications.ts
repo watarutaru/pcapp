@@ -48,3 +48,25 @@ export async function savePushToken(userId: string, token: string) {
     .upsert({ user_id: userId, token }, { onConflict: 'user_id' });
   if (error) throw error;
 }
+
+export async function sendPushNotificationToAll(title: string, body: string): Promise<void> {
+  const { data: rows } = await supabase.from('push_tokens').select('token');
+  if (!rows || rows.length === 0) return;
+
+  const messages = rows.map(({ token }: { token: string }) => ({
+    to: token,
+    sound: 'default' as const,
+    title,
+    body,
+  }));
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(messages),
+  });
+}

@@ -25,6 +25,11 @@ export async function createDiary(author: 'wataru' | 'tamaru', content: string):
   if (error) throw error;
 }
 
+export async function updateDiary(id: string, content: string): Promise<void> {
+  const { error } = await supabase.from('diaries').update({ content }).eq('id', id);
+  if (error) throw error;
+}
+
 export async function deleteDiary(id: string): Promise<void> {
   const { error } = await supabase.from('diaries').delete().eq('id', id);
   if (error) throw error;

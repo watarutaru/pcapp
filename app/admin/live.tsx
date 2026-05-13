@@ -1,12 +1,16 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Platform,
+  TextInput, Alert, ActivityIndicator, Platform, Switch,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getLives, createLive, updateLive, deleteLive } from '@/lib/lives';
+import { sendPushNotificationToAll } from '@/lib/notifications';
 import { Live, LiveCategory } from '@/lib/types';
+import Header from '@/components/layout/Header';
+import Button from '@/components/ui/Button';
 import { Colors } from '@/constants/colors';
+import { fonts } from '@/lib/fonts';
 
 const CATEGORIES: LiveCategory[] = ['ライブ', '配信', 'イベント', 'グッズ'];
 
@@ -43,6 +47,7 @@ export default function AdminLiveScreen() {
   const [mode, setMode] = useState<'list' | 'form'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(INIT_FORM);
+  const [sendNotif, setSendNotif] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,6 +64,7 @@ export default function AdminLiveScreen() {
   function openNew() {
     setForm(INIT_FORM);
     setEditingId(null);
+    setSendNotif(false);
     setError('');
     setMode('form');
   }
@@ -66,6 +72,7 @@ export default function AdminLiveScreen() {
   function openEdit(live: Live) {
     setForm(liveToForm(live));
     setEditingId(live.id);
+    setSendNotif(false);
     setError('');
     setMode('form');
   }
@@ -88,6 +95,12 @@ export default function AdminLiveScreen() {
         await updateLive(editingId, input);
       } else {
         await createLive(input);
+        if (sendNotif) {
+          await sendPushNotificationToAll(
+            'Piercing Cyclone',
+            `「${form.title.trim()}」を追加しました 📅 ${form.date} ${form.venue.trim()}`,
+          ).catch(() => {});
+        }
       }
       setForm(INIT_FORM);
       setEditingId(null);
@@ -122,12 +135,10 @@ export default function AdminLiveScreen() {
   if (mode === 'form') {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => { setMode('list'); setError(''); setEditingId(null); }} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← 戻る</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>{editingId ? 'ライブ編集' : 'ライブ追加'}</Text>
-        </View>
+        <Header
+          title={editingId ? 'ライブ編集' : 'ライブ追加'}
+          onBack={() => { setMode('list'); setError(''); setEditingId(null); }}
+        />
 
         <View style={styles.formCard}>
           <Field label="タイトル *">
@@ -188,54 +199,69 @@ export default function AdminLiveScreen() {
               numberOfLines={4}
             />
           </Field>
+
+          {!editingId && (
+            <View style={styles.notifRow}>
+              <View style={styles.notifLabelGroup}>
+                <Text style={styles.fieldLabel}>プッシュ通知を送信する</Text>
+                {sendNotif && (
+                  <Text style={styles.notifPreview}>
+                    「{form.title.trim() || '(タイトル)'}」を追加しました 📅 {form.date} {form.venue.trim()}
+                  </Text>
+                )}
+              </View>
+              <Switch
+                value={sendNotif}
+                onValueChange={setSendNotif}
+                trackColor={{ false: Colors.border, true: Colors.primary }}
+                thumbColor="#fff"
+              />
+            </View>
+          )}
         </View>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <TouchableOpacity
-          style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
-          onPress={handleSave}
-          disabled={saving}
-        >
-          <Text style={styles.saveBtnText}>{saving ? '保存中...' : editingId ? '更新する' : '保存する'}</Text>
-        </TouchableOpacity>
+        <View style={styles.saveBtnWrapper}>
+          <Button
+            label={saving ? '保存中...' : editingId ? '更新する' : '保存する'}
+            onPress={handleSave}
+            disabled={saving}
+            loading={saving}
+          />
+        </View>
       </ScrollView>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace('/(tabs)/admin' as any)} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← 戻る</Text>
-        </TouchableOpacity>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>ライブ管理</Text>
-          <TouchableOpacity style={styles.addBtn} onPress={openNew}>
-            <Text style={styles.addBtnText}>＋ 追加</Text>
-          </TouchableOpacity>
+      <Header title="ライブ管理" onBack={() => router.replace('/(tabs)/admin' as any)} />
+
+      <View style={styles.flex}>
+        <ScrollView contentContainerStyle={styles.list}>
+          {lives.length === 0 && <Text style={styles.emptyText}>ライブがありません</Text>}
+          {lives.map(live => (
+            <View key={live.id} style={styles.row}>
+              <TouchableOpacity style={styles.rowInfo} onPress={() => openEdit(live)}>
+                <Text style={styles.rowTitle}>{live.title}</Text>
+                <Text style={styles.rowSub}>
+                  {new Date(live.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}　{live.venue}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(live)}>
+                <Text style={styles.editBtnText}>編集</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(live)}>
+                <Text style={styles.deleteBtnText}>削除</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+        <View style={styles.addWrapper}>
+          <Button label="＋ ライブを追加" onPress={openNew} />
         </View>
       </View>
-
-      <ScrollView contentContainerStyle={styles.list}>
-        {lives.length === 0 && <Text style={styles.emptyText}>ライブがありません</Text>}
-        {lives.map(live => (
-          <View key={live.id} style={styles.row}>
-            <TouchableOpacity style={styles.rowInfo} onPress={() => openEdit(live)}>
-              <Text style={styles.rowTitle}>{live.title}</Text>
-              <Text style={styles.rowSub}>
-                {new Date(live.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}　{live.venue}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(live)}>
-              <Text style={styles.editBtnText}>編集</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(live)}>
-              <Text style={styles.deleteBtnText}>削除</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
     </View>
   );
 }
@@ -317,17 +343,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  flex: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
-  header: { paddingTop: 60, paddingHorizontal: 24, paddingBottom: 16 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  backBtn: { marginBottom: 8 },
-  backBtnText: { color: Colors.primary, fontSize: 16 },
-  title: { fontSize: 22, fontWeight: 'bold', color: Colors.text },
-  addBtn: { backgroundColor: Colors.primary, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
-  addBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  list: { paddingHorizontal: 24, paddingBottom: 40 },
+  list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
   emptyText: { color: Colors.textSecondary, fontSize: 15, textAlign: 'center', marginTop: 40 },
-  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: Colors.border },
+  row: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: Colors.surface, borderRadius: 12, padding: 14,
+    marginBottom: 10, borderWidth: 1, borderColor: Colors.border,
+  },
   rowInfo: { flex: 1 },
   rowTitle: { color: Colors.text, fontSize: 15, fontWeight: '700', marginBottom: 3 },
   rowSub: { color: Colors.textSecondary, fontSize: 12 },
@@ -335,11 +359,22 @@ const styles = StyleSheet.create({
   editBtnText: { color: Colors.primary, fontSize: 13, fontWeight: '600' },
   deleteBtn: { backgroundColor: Colors.error + '22', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   deleteBtnText: { color: Colors.error, fontSize: 13, fontWeight: '600' },
+  addWrapper: { position: 'absolute', bottom: 24, left: 20, right: 20 },
+
   formScroll: { paddingBottom: 60 },
-  formCard: { marginHorizontal: 24, backgroundColor: Colors.surface, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: Colors.border },
+  formCard: {
+    marginHorizontal: 20, backgroundColor: Colors.surface,
+    borderRadius: 16, padding: 20, borderWidth: 1, borderColor: Colors.border,
+  },
   field: { marginBottom: 18 },
-  fieldLabel: { color: Colors.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5 },
-  input: { backgroundColor: Colors.background, borderRadius: 10, borderWidth: 1, borderColor: Colors.border, color: Colors.text, fontSize: 15, paddingHorizontal: 14, paddingVertical: 12 },
+  fieldLabel: {
+    fontFamily: fonts.regular,
+    color: Colors.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5,
+  },
+  input: {
+    backgroundColor: Colors.background, borderRadius: 10, borderWidth: 1, borderColor: Colors.border,
+    color: Colors.text, fontSize: 15, paddingHorizontal: 14, paddingVertical: 12,
+  },
   inputMulti: { height: 100, textAlignVertical: 'top' },
   dateTimeRow: { flexDirection: 'row', gap: 8 },
   dateInput: { flex: 3 } as any,
@@ -353,8 +388,12 @@ const styles = StyleSheet.create({
   suggestionItem: { paddingHorizontal: 14, paddingVertical: 11 },
   suggestionItemBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
   suggestionText: { color: Colors.text, fontSize: 15 },
-  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 24, marginTop: 12 },
-  saveBtn: { marginHorizontal: 24, marginTop: 24, backgroundColor: Colors.primary, borderRadius: 14, paddingVertical: 18, alignItems: 'center' },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  notifRow: {
+    flexDirection: 'row', alignItems: 'flex-start',
+    justifyContent: 'space-between', paddingTop: 8,
+  },
+  notifLabelGroup: { flex: 1, marginRight: 12 },
+  notifPreview: { fontSize: 12, color: Colors.textSecondary, marginTop: 4, lineHeight: 18 },
+  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 20, marginTop: 12 },
+  saveBtnWrapper: { marginHorizontal: 20, marginTop: 24 },
 });
