@@ -252,7 +252,7 @@ export default function AdminMusicScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Music管理" onBack={() => router.replace('/(tabs)/admin' as any)} />
+      <Header title="Music管理" onBack={() => router.back()} />
 
       <View style={styles.flex}>
         <ScrollView contentContainerStyle={styles.list}>

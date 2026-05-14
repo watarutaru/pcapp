@@ -236,7 +236,7 @@ export default function AdminLiveScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="ライブ管理" onBack={() => router.replace('/(tabs)/admin' as any)} />
+      <Header title="ライブ管理" onBack={() => router.back()} />
 
       <View style={styles.flex}>
         <ScrollView contentContainerStyle={styles.list}>
