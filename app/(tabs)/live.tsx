@@ -146,7 +146,6 @@ export default function LiveScreen() {
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
-        title="LIVE"
         hasPrev={selectedIndex > 0}
         hasNext={selectedIndex < filteredLives.length - 1}
         onPrev={handlePrev}

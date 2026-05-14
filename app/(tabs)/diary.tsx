@@ -113,7 +113,6 @@ export default function DiaryScreen() {
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
-        title="JOURNAL"
         hasPrev={selectedIndex > 0}
         hasNext={selectedIndex < diaries.length - 1}
         onPrev={handlePrev}

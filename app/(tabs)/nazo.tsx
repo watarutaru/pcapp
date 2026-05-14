@@ -100,7 +100,6 @@ export default function NazoScreen() {
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
-        title="NAZO"
         hasPrev={selectedIndex > 0}
         hasNext={selectedIndex < publishedMysteries.length - 1}
         onPrev={handlePrev}
