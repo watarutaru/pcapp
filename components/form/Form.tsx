@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ViewStyle, KeyboardTypeOptions } from 'react-native';
 import { fonts } from '@/lib/fonts';
 import { IcHelp } from '@/components/icons';
 
@@ -12,6 +12,7 @@ type Props = {
   variant?: FormVariant;
   errorMessage?: string;
   onForgotPassword?: () => void;
+  keyboardType?: KeyboardTypeOptions;
   style?: ViewStyle;
 };
 
@@ -23,6 +24,7 @@ export default function Form({
   variant = 'regular',
   errorMessage,
   onForgotPassword,
+  keyboardType,
   style,
 }: Props) {
   const isPassword = variant === 'password';
@@ -46,6 +48,7 @@ export default function Form({
         placeholder={placeholder}
         secureTextEntry={isPassword}
         autoCapitalize="none"
+        keyboardType={keyboardType}
       />
       {isError && errorMessage && (
         <Text style={styles.errorText}>{errorMessage}</Text>

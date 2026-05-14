@@ -2,6 +2,23 @@
 
 Piercing Cyclone（バンド）のファン向け公式アプリ。React Native / Expo製。
 
+## コーディング方針
+
+### 共通コンポーネントの使用（必須）
+
+画面実装時は、既存の共通コンポーネントを必ず使用すること。独自に同等のスタイルを再実装してはいけない。
+
+| 用途 | コンポーネント |
+|---|---|
+| ボタン | `components/ui/Button.tsx`（variant: `primary` / `secondary` / `white`） |
+| フォーム入力 | `components/form/Form.tsx`（variant: `regular` / `password` / `error`） |
+| アイコン | `components/icons/`（`IcHelp`, `IcClose`, `IcArrow` など） |
+| レイアウト | `components/layout/`（`Header`, `BottomNav` など） |
+| カード | `components/cards/` |
+| UI部品 | `components/ui/`（`ButtonText`, `ContentHeading`, `Tab`, `Tag` など） |
+
+---
+
 ## 技術スタック
 
 - **フロントエンド**: React Native + Expo Router

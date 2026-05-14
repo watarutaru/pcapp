@@ -1,12 +1,14 @@
 import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
+  View, Text, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { signInWithPassword, resetPassword } from '@/lib/auth';
 import LogoSvg from '@/components/LogoSvg';
+import Button from '@/components/ui/Button';
+import Form from '@/components/form/Form';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -71,36 +73,21 @@ export default function LoginScreen() {
 
         {/* フォーム */}
         <View style={styles.formGroup}>
-          {/* メールアドレス */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>メールアドレス</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+          <Form
+            label="メールアドレス"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            variant={error && !password ? 'error' : 'regular'}
+          />
 
-          {/* パスワード */}
-          <View style={styles.field}>
-            <View style={styles.fieldLabelRow}>
-              <Text style={styles.fieldLabel}>パスワード</Text>
-              <TouchableOpacity style={styles.forgotLink} onPress={handleResetPassword} disabled={loading}>
-                <View style={styles.forgotIcon}>
-                  <Text style={styles.forgotIconText}>?</Text>
-                </View>
-                <Text style={styles.forgotText}>お忘れの方</Text>
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
+          <Form
+            label="パスワード"
+            value={password}
+            onChangeText={setPassword}
+            variant={error ? 'error' : 'password'}
+            onForgotPassword={handleResetPassword}
+          />
 
           {/* エラー・情報メッセージ */}
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -108,12 +95,7 @@ export default function LoginScreen() {
 
           {/* ログインボタン */}
           <View style={styles.buttonWrap}>
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-              {loading
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.loginButtonText}>ログイン</Text>
-              }
-            </TouchableOpacity>
+            <Button label="ログイン" onPress={handleLogin} loading={loading} />
           </View>
 
           {/* 会員登録 */}
@@ -167,69 +149,8 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 16,
   },
-  field: {
-    gap: 6,
-  },
-  fieldLabelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  fieldLabel: {
-    fontFamily: fonts.regular,
-    fontSize: 11,
-    color: '#222',
-  },
-  forgotLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  forgotIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1,
-    borderColor: '#222',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  forgotIconText: {
-    fontFamily: fonts.regular,
-    fontSize: 10,
-    color: '#222',
-    lineHeight: 12,
-  },
-  forgotText: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: '#222',
-  },
-  input: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#222',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    backgroundColor: 'transparent',
-    color: '#222',
-    fontSize: 14,
-  },
   buttonWrap: {
     paddingTop: 16,
-  },
-  loginButton: {
-    backgroundColor: '#222',
-    borderRadius: 60,
-    paddingVertical: 12,
-    alignItems: 'center',
-    width: '100%',
-  },
-  loginButtonText: {
-    fontFamily: fonts.jpBold,
-    fontSize: 16,
-    color: '#fff',
-    lineHeight: 24,
   },
   signupWrap: {
     alignItems: 'center',
