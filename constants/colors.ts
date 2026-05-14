@@ -1,6 +1,6 @@
 export const Colors = {
   // ベースカラー（Figmaデザイントークン準拠）
-  background: '#efefef',
+  background: '#f9f9f9',
   surface: '#ffffff',
   text: '#222222',
   textSecondary: '#898989',
