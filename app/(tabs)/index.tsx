@@ -162,7 +162,7 @@ export default function HomeScreen() {
                 date={formatDate(nextLive.date)}
                 venue={nextLive.venue}
                 time={formatLiveTime(nextLive)}
-                illustrationSource={require('@/assets/images/live-illust.png')}
+                illustration={require('@/assets/images/live-illust.png')}
               />
             </TouchableOpacity>
           ) : (

@@ -10,8 +10,9 @@ type Props = {
   date: string;
   venue: string;
   time?: string;
+  openTime?: string;
   tag?: string;
-  illustrationSource?: ImageSourcePropType;
+  illustration?: ImageSourcePropType;
   style?: ViewStyle;
 };
 
@@ -21,32 +22,42 @@ export default function LiveCard({
   date,
   venue,
   time,
+  openTime,
   tag,
-  illustrationSource,
+  illustration,
   style,
 }: Props) {
   const isUpcoming = variant === 'upcoming';
 
+  const timeText =
+    openTime && time
+      ? `${openTime} / ${time}`
+      : time ?? openTime ?? null;
+
   return (
-    <View style={[styles.container, illustrationSource && styles.containerWithIllust, style]}>
+    <View style={[styles.container, style]}>
       {tag && <Tag label={tag} variant={isUpcoming ? 'primary' : 'strong'} />}
-      <View style={styles.info}>
-        <View style={styles.titleSection}>
-          <Text style={styles.date}>{date}</Text>
-          <Text style={styles.title}>{title}</Text>
+      <View style={styles.body}>
+        <View style={[styles.info, illustration ? styles.infoWithIllust : undefined]}>
+          <View style={styles.titleSection}>
+            <Text style={styles.date}>{date}</Text>
+            <Text style={styles.title}>{title}</Text>
+          </View>
+          <View style={styles.detailSection}>
+            <Text style={styles.detail}>{venue}</Text>
+            {isUpcoming && timeText && <Text style={styles.detailEn}>{timeText}</Text>}
+          </View>
         </View>
-        <View style={styles.detailSection}>
-          <Text style={styles.detail}>{venue}</Text>
-          {isUpcoming && time && <Text style={styles.detailEn}>{time}</Text>}
-        </View>
+        {illustration && (
+          <View style={styles.illustContainer}>
+            <Image
+              source={illustration}
+              style={styles.illust}
+              resizeMode="contain"
+            />
+          </View>
+        )}
       </View>
-      {illustrationSource && (
-        <Image
-          source={illustrationSource}
-          style={styles.illustration}
-          resizeMode="contain"
-        />
-      )}
     </View>
   );
 }
@@ -59,13 +70,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     gap: 8,
-  },
-  containerWithIllust: {
     overflow: 'hidden',
   },
+  body: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
   info: {
+    flex: 1,
     gap: 12,
-    paddingRight: 60,
+  },
+  infoWithIllust: {
+    paddingRight: 8,
   },
   titleSection: {
     gap: 6,
@@ -93,10 +109,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#222',
   },
-  illustration: {
-    position: 'absolute',
-    right: -20,
-    bottom: 0,
+  illustContainer: {
+    width: 90,
+    height: 90,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  illust: {
     width: 91,
     height: 107,
     transform: [{ rotate: '-19deg' }],
