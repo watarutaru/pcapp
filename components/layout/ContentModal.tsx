@@ -1,19 +1,21 @@
-import { fonts } from '@/lib/fonts';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  Modal, View, StyleSheet, TouchableOpacity, ScrollView,
   Animated, Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import IcClose from '@/components/icons/IcClose';
 import ModalBottomNav from './ModalBottomNav';
 import { Colors } from '@/constants/colors';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// Header component: paddingVertical=24*2 + inner height=32
+const HEADER_HEIGHT = 80;
+
 type Props = {
   visible: boolean;
   onClose: () => void;
-  title: string;
   onPrev?: () => void;
   onNext?: () => void;
   hasPrev?: boolean;
@@ -22,10 +24,11 @@ type Props = {
 };
 
 export default function ContentModal({
-  visible, onClose, title, onPrev, onNext, hasPrev = false, hasNext = false, children,
+  visible, onClose, onPrev, onNext, hasPrev = false, hasNext = false, children,
 }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (visible) {
@@ -60,9 +63,7 @@ export default function ContentModal({
       <Animated.View
         style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
       >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{title}</Text>
-        </View>
+        <View style={{ height: insets.top + HEADER_HEIGHT }} />
 
         <View style={styles.card}>
           <TouchableOpacity
@@ -94,20 +95,6 @@ export default function ContentModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontFamily: fonts.condensed,
-    fontSize: 24,
-    color: Colors.text,
-    letterSpacing: 1,
-    lineHeight: 32,
   },
   card: {
     flex: 1,

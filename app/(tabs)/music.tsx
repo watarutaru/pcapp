@@ -69,7 +69,6 @@ export default function MusicScreen() {
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
-        title="WORKS"
         hasPrev={selectedIndex > 0}
         hasNext={selectedIndex < musics.length - 1}
         onPrev={handlePrev}
