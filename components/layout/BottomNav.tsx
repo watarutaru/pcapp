@@ -1,10 +1,11 @@
 import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
-import IcHome from '@/components/icons/IcHome';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import IcHome, { NavIconVariant } from '@/components/icons/IcHome';
 import IcLive from '@/components/icons/IcLive';
 import IcDiary from '@/components/icons/IcDiary';
 import IcNazo from '@/components/icons/IcNazo';
 import IcMusic from '@/components/icons/IcMusic';
-import { NavIconVariant } from '@/components/icons/IcHome';
+import { Colors } from '@/constants/colors';
 
 export type NavTab = 'home' | 'live' | 'diary' | 'nazo' | 'music';
 
@@ -28,8 +29,9 @@ type Props = {
 };
 
 export default function BottomNav({ activeTab = 'home', onTabPress, style }: Props) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }, style]}>
       {NAV_ITEMS.map(({ key, Icon }) => {
         const isActive = activeTab === key;
         return (
@@ -39,7 +41,7 @@ export default function BottomNav({ activeTab = 'home', onTabPress, style }: Pro
             onPress={() => onTabPress?.(key)}
             activeOpacity={0.7}
           >
-            <Icon size={32} color='#898989' variant={isActive ? 'color' : 'regular'} />
+            <Icon size={32} color={Colors.textSecondary} variant={isActive ? 'color' : 'regular'} />
           </TouchableOpacity>
         );
       })}
@@ -52,11 +54,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: '#efefef',
     paddingHorizontal: 32,
-    height: 64,
+    minHeight: 64,
   },
   item: {
     alignItems: 'center',

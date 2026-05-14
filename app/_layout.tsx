@@ -105,7 +105,8 @@ export default function RootLayout() {
     const inAuth = segments[0] === '(auth)';
     const inReset = inAuth && segments[1] === 'reset-password';
     if (inReset) return; // パスワードリセット中は自動遷移をスキップ
-    if (!session && !inAuth) {
+    const inComponentLibrary = segments[0] === 'component-library';
+    if (!session && !inAuth && !inComponentLibrary) {
       router.replace('/(auth)/login');
     } else if (session && inAuth) {
       router.replace('/(tabs)');

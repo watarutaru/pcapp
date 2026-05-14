@@ -26,6 +26,7 @@ import StatusBlock from '@/components/home/StatusBlock';
 import CheckinBlock from '@/components/home/CheckinBlock';
 
 import Header from '@/components/layout/Header';
+import BottomNav, { NavTab } from '@/components/layout/BottomNav';
 import ModalBottomNav from '@/components/layout/ModalBottomNav';
 
 import {
@@ -265,8 +266,17 @@ function HomeSection() {
 }
 
 function LayoutSection() {
+  const [activeNavTab, setActiveNavTab] = useState<NavTab>('home');
+
   return (
     <>
+      <SectionTitle label="BottomNav" />
+      <Story label="interactive — tap to switch active tab">
+        <View style={styles.outlined}>
+          <BottomNav activeTab={activeNavTab} onTabPress={setActiveNavTab} />
+        </View>
+      </Story>
+
       <SectionTitle label="Header" />
       <Story label="regular (back)">
         <View style={styles.outlined}>
