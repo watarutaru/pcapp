@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ViewStyle, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import IcHome, { NavIconVariant } from '@/components/icons/IcHome';
 import IcLive from '@/components/icons/IcLive';
@@ -25,15 +25,17 @@ const NAV_ITEMS: NavItem[] = [
 type Props = {
   activeTab?: NavTab;
   onTabPress?: (tab: NavTab) => void;
+  badges?: Partial<Record<NavTab, number>>;
   style?: ViewStyle;
 };
 
-export default function BottomNav({ activeTab = 'home', onTabPress, style }: Props) {
+export default function BottomNav({ activeTab = 'home', onTabPress, badges, style }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }, style]}>
       {NAV_ITEMS.map(({ key, Icon }) => {
         const isActive = activeTab === key;
+        const badgeCount = badges?.[key] ?? 0;
         return (
           <TouchableOpacity
             key={key}
@@ -41,7 +43,14 @@ export default function BottomNav({ activeTab = 'home', onTabPress, style }: Pro
             onPress={() => onTabPress?.(key)}
             activeOpacity={0.7}
           >
-            <Icon size={32} color={Colors.textSecondary} variant={isActive ? 'color' : 'regular'} />
+            <View style={styles.iconWrapper}>
+              <Icon size={32} color={Colors.textSecondary} variant={isActive ? 'color' : 'regular'} />
+              {badgeCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{badgeCount > 99 ? '99+' : badgeCount}</Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
         );
       })}
@@ -63,7 +72,26 @@ const styles = StyleSheet.create({
   item: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 32,
-    height: 32,
+    padding: 8,
+  },
+  iconWrapper: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    backgroundColor: Colors.error,
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });
