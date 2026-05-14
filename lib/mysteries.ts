@@ -1,6 +1,28 @@
 import { supabase } from './supabase';
 import { Mystery } from './types';
 
+export async function uploadMysteryImage(uri: string, mimeType?: string): Promise<string> {
+  const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+  const fileName = `mystery_${Date.now()}.${ext}`;
+
+  const response = await fetch(uri);
+  const blob = await response.blob();
+
+  const { error } = await supabase.storage
+    .from('nazo-images')
+    .upload(fileName, blob, {
+      contentType: mimeType || 'image/jpeg',
+      upsert: false,
+    });
+  if (error) throw error;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('nazo-images')
+    .getPublicUrl(fileName);
+
+  return publicUrl;
+}
+
 export async function getMysteries(): Promise<Mystery[]> {
   const { data, error } = await supabase
     .from('mysteries')

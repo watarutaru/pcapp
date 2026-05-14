@@ -48,24 +48,6 @@ export interface Diary {
   created_at: string;
 }
 
-export interface PcNazo {
-  id: string;
-  title: string;
-  date: string;
-  body: string;
-  image_url: string;
-  correct_answers: string[];
-  answer_display: string;
-  created_at: string;
-}
-
-export interface PcNazoResult {
-  id: string;
-  user_id: string;
-  nazo_id: string;
-  created_at: string;
-}
-
 export interface Mystery {
   id: string;
   vol: number;

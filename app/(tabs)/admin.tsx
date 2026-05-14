@@ -38,13 +38,6 @@ const MENU_ITEMS = [
     href: '/admin/mystery',
   },
   {
-    key: 'nazo',
-    label: 'PCなぞ管理',
-    sub: 'PCなぞの作成・編集',
-    Icon: IcNazo,
-    href: '/admin/nazo',
-  },
-  {
     key: 'music',
     label: 'Music管理',
     sub: 'アルバム・シングルの登録',
