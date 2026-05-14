@@ -2,22 +2,18 @@ import { fonts } from '@/lib/fonts';
 import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Image, TextInput,
+  RefreshControl, ActivityIndicator, Image,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SvgXml } from 'react-native-svg';
 import { getMysteries } from '@/lib/mysteries';
 import { Mystery } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 import ContentModal from '@/components/layout/ContentModal';
+import Header from '@/components/layout/Header';
+import NazoCard from '@/components/cards/NazoCard';
+import NazoInputForm from '@/components/form/NazoInputForm';
 import { HintAccordion } from '@/components/ui';
-
-const lockOpenSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="3" y="11" width="18" height="11" rx="2" stroke="white" stroke-width="1.5"/>
-  <path d="M7 11V7a5 5 0 0 1 9.9-1" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-</svg>`;
 
 type AnswerState = 'idle' | 'wrong' | 'correct';
 
@@ -68,10 +64,7 @@ export default function NazoScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <Text style={styles.title}>NAZO</Text>
-      </View>
+      <Header title="NAZO" showBack={false} />
 
       <FlatList
         data={mysteries}
@@ -86,28 +79,14 @@ export default function NazoScreen() {
           return (
             <View style={styles.cardWrapper}>
               <TouchableOpacity
-                style={styles.card}
                 onPress={() => isPublished && setSelectedIndex(publishedIdx)}
                 activeOpacity={isPublished ? 0.8 : 1}
               >
-                <View style={styles.cardInfo}>
-                  <Text style={styles.volText}>Vol.{item.vol}</Text>
-                  <Text style={styles.titleText}>{item.title}</Text>
-                </View>
-                <View style={styles.lockContainer}>
-                  <Image
-                    source={
-                      isPublished
-                        ? require('@/assets/images/lock-open.png')
-                        : require('@/assets/images/lock-closed.png')
-                    }
-                    style={styles.lockIcon}
-                    resizeMode="contain"
-                  />
-                  {isPublished && (
-                    <Text style={styles.decodeLabel}>Decode</Text>
-                  )}
-                </View>
+                <NazoCard
+                  vol={`Vol.${item.vol}`}
+                  title={item.title}
+                  locked={!isPublished}
+                />
               </TouchableOpacity>
               {isUnread && <View style={styles.unreadDot} />}
             </View>
@@ -118,7 +97,6 @@ export default function NazoScreen() {
         }
       />
 
-      {/* 詳細モーダル */}
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
@@ -185,53 +163,16 @@ function NazoModalContent({ mystery }: { mystery: Mystery }) {
         />
       ) : null}
 
-      {mystery.answer && answerState !== 'correct' ? (
-        <View style={modalStyles.answerSection}>
-          <View style={modalStyles.answerRow}>
-            <TextInput
-              style={modalStyles.answerInput}
-              value={answer}
-              onChangeText={text => {
-                setAnswer(text);
-                if (answerState === 'wrong') setAnswerState('idle');
-              }}
-              placeholder=""
-              placeholderTextColor={Colors.textSecondary}
-              returnKeyType="done"
-              onSubmitEditing={handleSubmit}
-            />
-            <TouchableOpacity
-              style={modalStyles.submitButton}
-              onPress={handleSubmit}
-              activeOpacity={0.8}
-            >
-              <Text style={modalStyles.submitButtonText}>送信</Text>
-            </TouchableOpacity>
-          </View>
-          {answerState === 'wrong' && (
-            <View style={modalStyles.wrongBanner}>
-              <Text style={modalStyles.wrongIcon}>🤔</Text>
-              <Text style={modalStyles.wrongText}>残念！ もう一回トライしてみるのじゃ</Text>
-            </View>
-          )}
-        </View>
-      ) : null}
-
-      {answerState === 'correct' && (
-        <LinearGradient
-          colors={['#654cab', '#ea6025']}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 1, y: 0 }}
-          style={modalStyles.correctBanner}
-        >
-          <View style={modalStyles.correctContent}>
-            <SvgXml xml={lockOpenSvg} width={22} height={32} />
-            <View>
-              <Text style={modalStyles.correctTitle}>正解</Text>
-              <Text style={modalStyles.correctSubtitle}>謎を解きあかした！</Text>
-            </View>
-          </View>
-        </LinearGradient>
+      {mystery.answer && (
+        <NazoInputForm
+          value={answer}
+          onChangeText={text => {
+            setAnswer(text);
+            if (answerState === 'wrong') setAnswerState('idle');
+          }}
+          onSubmit={handleSubmit}
+          variant={answerState === 'correct' ? 'success' : answerState === 'wrong' ? 'failure' : 'default'}
+        />
       )}
     </>
   );
@@ -248,19 +189,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
   },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    alignItems: 'center',
-  },
-  title: {
-    fontFamily: fonts.condensed,
-    fontSize: 24,
-    color: Colors.text,
-    letterSpacing: 1,
-    lineHeight: 32,
-  },
   list: {
     paddingHorizontal: 24,
     paddingBottom: 24,
@@ -268,47 +196,6 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     position: 'relative',
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#efefef',
-    paddingHorizontal: 24,
-    paddingVertical: 17,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  cardInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  volText: {
-    fontFamily: fonts.jpBold,
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.text,
-    lineHeight: 16,
-  },
-  titleText: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: Colors.text,
-  },
-  lockContainer: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  lockIcon: {
-    width: 40,
-    height: 40,
-  },
-  decodeLabel: {
-    fontFamily: fonts.condensed,
-    fontSize: 10,
-    color: Colors.error,
-    letterSpacing: 0.5,
   },
   unreadDot: {
     position: 'absolute',
@@ -360,76 +247,5 @@ const modalStyles = StyleSheet.create({
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
-  },
-  answerSection: {
-    gap: 8,
-  },
-  answerRow: {
-    flexDirection: 'row',
-    gap: 6,
-    alignItems: 'center',
-  },
-  answerInput: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#222',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    color: '#364153',
-  },
-  submitButton: {
-    width: 76,
-    height: 44,
-    backgroundColor: '#222',
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: -0.3,
-  },
-  wrongBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#fffad8',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  wrongIcon: {
-    fontSize: 20,
-  },
-  wrongText: {
-    fontSize: 12,
-    color: '#364153',
-    lineHeight: 23,
-  },
-  correctBanner: {
-    borderRadius: 4,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  correctContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  correctTitle: {
-    fontFamily: fonts.jpBlack,
-    fontSize: 17,
-    color: '#fff',
-    fontWeight: '700',
-  },
-  correctSubtitle: {
-    fontSize: 12,
-    color: '#fff',
-    lineHeight: 20,
   },
 });

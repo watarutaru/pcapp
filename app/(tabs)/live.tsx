@@ -2,19 +2,24 @@ import { fonts } from '@/lib/fonts';
 import { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Image,
+  RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { getLives, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 import ContentModal from '@/components/layout/ContentModal';
+import Header from '@/components/layout/Header';
+import Tab from '@/components/ui/Tab';
+import Tag from '@/components/ui/Tag';
+import Button from '@/components/ui/Button';
+import LiveCard from '@/components/cards/LiveCard';
+import Setlist from '@/components/ui/Setlist';
 import { LiveInformation } from '@/components/ui';
 
-type Tab = 'UPCOMING' | 'HISTORY';
+type LiveTab = 'UPCOMING' | 'HISTORY';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -37,7 +42,7 @@ function formatTime(dateStr: string, openTime?: string) {
 
 export default function LiveScreen() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('UPCOMING');
+  const [tab, setTab] = useState<LiveTab>('UPCOMING');
   const [lives, setLives] = useState<Live[]>([]);
   const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -98,30 +103,13 @@ export default function LiveScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <Text style={styles.title}>LIVE</Text>
-      </View>
+      <Header title="LIVE" showBack={false} />
 
-      {/* タブ */}
       <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[styles.tab, tab === 'UPCOMING' && styles.tabActive]}
-          onPress={() => setTab('UPCOMING')}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.tabText, tab === 'UPCOMING' && styles.tabTextActive]}>UPCOMING</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, tab === 'HISTORY' && styles.tabActive]}
-          onPress={() => setTab('HISTORY')}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.tabText, tab === 'HISTORY' && styles.tabTextActive]}>HISTORY</Text>
-        </TouchableOpacity>
+        <Tab label="UPCOMING" active={tab === 'UPCOMING'} onPress={() => setTab('UPCOMING')} />
+        <Tab label="HISTORY" active={tab === 'HISTORY'} onPress={() => setTab('HISTORY')} />
       </View>
 
-      {/* リスト */}
       <FlatList
         data={filteredLives}
         keyExtractor={item => item.id}
@@ -133,38 +121,16 @@ export default function LiveScreen() {
           const isUnread = !readIds.live.has(item.id);
           return (
             <View style={styles.cardWrapper}>
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => setSelectedIndex(index)}
-                activeOpacity={0.8}
-              >
-                {isCheckedIn && (
-                  <LinearGradient
-                    colors={['#654cab', '#ea6025']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.statusBadge}
-                  >
-                    <Text style={styles.statusText}>Dragged!</Text>
-                  </LinearGradient>
-                )}
-                <View style={styles.cardContent}>
-                  <View style={styles.cardTop}>
-                    <Text style={styles.dateText}>{formatDate(item.date)}</Text>
-                    <Text style={styles.titleText} numberOfLines={2}>{item.title}</Text>
-                  </View>
-                  <View style={styles.cardMeta}>
-                    <Text style={styles.venueText}>{item.venue}</Text>
-                    <Text style={styles.timeText}>{formatTime(item.date, item.open_time)}</Text>
-                  </View>
-                </View>
-                <View style={styles.illustContainer} pointerEvents="none">
-                  <Image
-                    source={require('@/assets/images/live-illust.png')}
-                    style={styles.illust}
-                    resizeMode="contain"
-                  />
-                </View>
+              <TouchableOpacity onPress={() => setSelectedIndex(index)} activeOpacity={0.8}>
+                <LiveCard
+                  variant={tab === 'UPCOMING' ? 'upcoming' : 'history'}
+                  title={item.title}
+                  date={formatDate(item.date)}
+                  venue={item.venue}
+                  time={formatTime(item.date, item.open_time)}
+                  tag={isCheckedIn ? 'Dragged!' : undefined}
+                  illustration={require('@/assets/images/live-illust.png')}
+                />
               </TouchableOpacity>
               {isUnread && <View style={styles.unreadDot} />}
             </View>
@@ -177,7 +143,6 @@ export default function LiveScreen() {
         }
       />
 
-      {/* 詳細モーダル */}
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
@@ -209,18 +174,13 @@ function LiveModalContent({
   isCheckedIn: boolean;
   onCheckin: () => void;
 }) {
+  const songs = live.set_list
+    ? live.set_list.split('\n').filter(s => s.trim())
+    : [];
+
   return (
     <>
-      {isCheckedIn && (
-        <LinearGradient
-          colors={['#654cab', '#ea6025']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={modalStyles.draggedBadge}
-        >
-          <Text style={modalStyles.draggedText}>Dragged!</Text>
-        </LinearGradient>
-      )}
+      {isCheckedIn && <Tag label="Dragged!" variant="strong" />}
 
       <View style={modalStyles.titleSection}>
         <Text style={modalStyles.dateText}>{formatDate(live.date)}</Text>
@@ -238,26 +198,13 @@ function LiveModalContent({
         <Text style={modalStyles.descriptionText}>{live.description}</Text>
       ) : null}
 
-      {live.set_list ? (
-        <View style={modalStyles.setListBox}>
-          <Text style={modalStyles.setListTitle}>SET LIST</Text>
-          <Text style={modalStyles.setListContent}>{live.set_list}</Text>
-        </View>
-      ) : null}
+      {songs.length > 0 && <Setlist songs={songs} />}
 
       <View style={modalStyles.checkinSection}>
         {isCheckedIn ? (
-          <View style={modalStyles.checkedButton}>
-            <Text style={modalStyles.checkedButtonText}>参戦済み</Text>
-          </View>
+          <Button label="参戦済み" variant="secondary" disabled />
         ) : (
-          <TouchableOpacity
-            style={modalStyles.checkinButton}
-            onPress={onCheckin}
-            activeOpacity={0.8}
-          >
-            <Text style={modalStyles.checkinButtonText}>このライブにチェックインする</Text>
-          </TouchableOpacity>
+          <Button label="このライブにチェックインする" onPress={onCheckin} />
         )}
       </View>
     </>
@@ -275,49 +222,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
   },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    alignItems: 'center',
-  },
-  title: {
-    fontFamily: fonts.condensed,
-    fontSize: 24,
-    color: Colors.text,
-    letterSpacing: 1,
-    lineHeight: 32,
-  },
   tabRow: {
     flexDirection: 'row',
     gap: 8,
     justifyContent: 'center',
     paddingHorizontal: 24,
     paddingBottom: 16,
-  },
-  tab: {
-    borderWidth: 1,
-    borderColor: Colors.textSecondary,
-    borderRadius: 60,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    minHeight: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  tabText: {
-    fontFamily: fonts.condensedMedium,
-    fontSize: 16,
-    color: Colors.text,
-    letterSpacing: 1,
-    lineHeight: 16,
-  },
-  tabTextActive: {
-    color: '#fff',
   },
   list: {
     paddingHorizontal: 24,
@@ -326,78 +236,6 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     position: 'relative',
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#efefef',
-    padding: 16,
-    gap: 10,
-    overflow: 'hidden',
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    borderRadius: 2,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-  },
-  statusText: {
-    fontFamily: fonts.condensedBold,
-    fontSize: 10,
-    color: '#fff',
-    letterSpacing: 1,
-    lineHeight: 16,
-  },
-  cardContent: {
-    gap: 12,
-    paddingRight: 60,
-  },
-  cardTop: {
-    gap: 6,
-  },
-  dateText: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: Colors.text,
-    lineHeight: 14,
-  },
-  titleText: {
-    fontFamily: fonts.jpBold,
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.text,
-    lineHeight: 22,
-  },
-  cardMeta: {
-    gap: 6,
-  },
-  venueText: {
-    fontFamily: fonts.jpLight,
-    fontSize: 11,
-    color: Colors.text,
-    lineHeight: 11,
-  },
-  timeText: {
-    fontFamily: fonts.regular,
-    fontSize: 11,
-    color: Colors.text,
-    lineHeight: 11,
-  },
-  illustContainer: {
-    position: 'absolute',
-    right: -28,
-    top: 0,
-    bottom: 0,
-    width: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  illust: {
-    width: 91,
-    height: 107,
-    transform: [{ rotate: '-19deg' }],
-    opacity: 0.85,
   },
   unreadDot: {
     position: 'absolute',
@@ -419,19 +257,6 @@ const styles = StyleSheet.create({
 });
 
 const modalStyles = StyleSheet.create({
-  draggedBadge: {
-    alignSelf: 'flex-start',
-    borderRadius: 2,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-  },
-  draggedText: {
-    fontFamily: fonts.condensedBold,
-    fontSize: 10,
-    color: '#fff',
-    letterSpacing: 1,
-    lineHeight: 16,
-  },
   titleSection: {
     gap: 8,
   },
@@ -453,50 +278,7 @@ const modalStyles = StyleSheet.create({
     color: '#364153',
     lineHeight: 23,
   },
-  setListBox: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  setListTitle: {
-    fontFamily: fonts.condensedMedium,
-    fontSize: 18,
-    color: '#222',
-    letterSpacing: 1,
-    lineHeight: 18,
-  },
-  setListContent: {
-    fontSize: 14,
-    color: '#364153',
-    lineHeight: 23,
-  },
   checkinSection: {
     paddingTop: 8,
-  },
-  checkinButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 60,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  checkinButtonText: {
-    fontFamily: fonts.jpBold,
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: -0.3,
-  },
-  checkedButton: {
-    backgroundColor: Colors.success,
-    borderRadius: 60,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  checkedButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
   },
 });
