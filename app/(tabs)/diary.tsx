@@ -2,7 +2,7 @@ import { fonts } from '@/lib/fonts';
 import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  RefreshControl, ActivityIndicator, Image,
+  RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getDiaries } from '@/lib/diaries';
@@ -10,6 +10,9 @@ import { Diary } from '@/lib/types';
 import { Colors } from '@/constants/colors';
 import { useUnread } from '@/lib/UnreadContext';
 import ContentModal from '@/components/layout/ContentModal';
+import Header from '@/components/layout/Header';
+import DiaryCard from '@/components/cards/DiaryCard';
+import { IcWriterWataru, IcWriterTmrr } from '@/components/icons';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -23,14 +26,8 @@ function formatDate(dateStr: string) {
 }
 
 const AUTHOR_CONFIG = {
-  wataru: {
-    label: 'Wataru',
-    avatar: require('@/assets/images/avatar-wataru.png'),
-  },
-  tamaru: {
-    label: 'tmrr',
-    avatar: require('@/assets/images/avatar-tamaru.png'),
-  },
+  wataru: { label: 'Wataru', Icon: IcWriterWataru },
+  tamaru: { label: 'tmrr', Icon: IcWriterTmrr },
 } as const;
 
 export default function DiaryScreen() {
@@ -79,10 +76,7 @@ export default function DiaryScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <Text style={styles.title}>JOURNAL</Text>
-      </View>
+      <Header title="JOURNAL" showBack={false} />
 
       <FlatList
         data={diaries}
@@ -91,7 +85,7 @@ export default function DiaryScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => {
-          const config = AUTHOR_CONFIG[item.author];
+          const { label, Icon } = AUTHOR_CONFIG[item.author];
           const isUnread = !readIds.diary.has(item.id);
           const preview = item.content.length > 60
             ? item.content.slice(0, 60) + '...'
@@ -99,22 +93,13 @@ export default function DiaryScreen() {
 
           return (
             <View style={styles.cardWrapper}>
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => setSelectedIndex(index)}
-                activeOpacity={0.8}
-              >
-                {/* ヘッダー行：日付 + 著者名 + アバター */}
-                <View style={styles.cardHeader}>
-                  <Text style={styles.dateText}>{formatDate(item.created_at)}</Text>
-                  <View style={styles.authorRow}>
-                    <Text style={styles.authorName}>{config.label}</Text>
-                    <Image source={config.avatar} style={styles.avatar} />
-                  </View>
-                </View>
-
-                {/* プレビューテキスト */}
-                <Text style={styles.preview}>{preview}</Text>
+              <TouchableOpacity onPress={() => setSelectedIndex(index)} activeOpacity={0.8}>
+                <DiaryCard
+                  date={formatDate(item.created_at)}
+                  writer={label}
+                  preview={preview}
+                  writerAvatar={<Icon size={48} />}
+                />
               </TouchableOpacity>
               {isUnread && <View style={styles.unreadDot} />}
             </View>
@@ -125,7 +110,6 @@ export default function DiaryScreen() {
         }
       />
 
-      {/* 詳細モーダル */}
       <ContentModal
         visible={selectedIndex >= 0}
         onClose={handleClose}
@@ -144,14 +128,14 @@ export default function DiaryScreen() {
 }
 
 function DiaryModalContent({ diary }: { diary: Diary }) {
-  const config = AUTHOR_CONFIG[diary.author];
+  const { label, Icon } = AUTHOR_CONFIG[diary.author];
   return (
     <>
       <View style={modalStyles.metaRow}>
         <Text style={modalStyles.dateText}>{formatDate(diary.created_at)}</Text>
         <View style={modalStyles.authorGroup}>
-          <Text style={modalStyles.authorName}>{config.label}</Text>
-          <Image source={config.avatar} style={modalStyles.avatar} />
+          <Text style={modalStyles.authorName}>{label}</Text>
+          <Icon size={48} />
         </View>
       </View>
       <Text style={modalStyles.contentText}>{diary.content}</Text>
@@ -170,19 +154,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
   },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    alignItems: 'center',
-  },
-  title: {
-    fontFamily: fonts.condensed,
-    fontSize: 24,
-    color: Colors.text,
-    letterSpacing: 1,
-    lineHeight: 32,
-  },
   list: {
     paddingHorizontal: 24,
     paddingBottom: 24,
@@ -190,48 +161,6 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     position: 'relative',
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#efefef',
-    paddingHorizontal: 24,
-    paddingVertical: 17,
-    gap: 12,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  dateText: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: Colors.text,
-  },
-  authorRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 12,
-  },
-  authorName: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: Colors.text,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  preview: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: Colors.text,
-    lineHeight: 18,
   },
   unreadDot: {
     position: 'absolute',
@@ -273,11 +202,6 @@ const modalStyles = StyleSheet.create({
     fontSize: 14,
     color: '#0a0a0a',
     lineHeight: 28,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
   },
   contentText: {
     fontFamily: fonts.jpLight,
