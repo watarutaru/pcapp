@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
-  ScrollView, TextInput, Modal, Switch, Platform, KeyboardAvoidingView,
+  ScrollView, TextInput, Modal, Switch, Platform, KeyboardAvoidingView, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { getMysteries, createMystery, updateMystery, deleteMystery } from '@/lib/mysteries';
+import { getMysteries, createMystery, updateMystery, deleteMystery, uploadMysteryImage } from '@/lib/mysteries';
 import { sendPushNotificationToAll } from '@/lib/notifications';
 import { Mystery } from '@/lib/types';
 import Header from '@/components/layout/Header';
@@ -13,7 +14,7 @@ import { Colors } from '@/constants/colors';
 import { fonts } from '@/lib/fonts';
 
 const EMPTY_FORM = {
-  vol: '', title: '', content: '', image_url: '', hint: '', answer: '', is_published: false,
+  vol: '', title: '', content: '', hint: '', answer: '', is_published: false,
 };
 
 export default function AdminMysteryScreen() {
@@ -24,6 +25,8 @@ export default function AdminMysteryScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageMime, setImageMime] = useState<string | undefined>(undefined);
   const [answerCandidates, setAnswerCandidates] = useState<Array<{ text: string; selected: boolean }>>([]);
   const [candidatesShown, setCandidatesShown] = useState(false);
   const [sendNotif, setSendNotif] = useState(false);
@@ -70,9 +73,27 @@ export default function AdminMysteryScreen() {
     setCandidatesShown(false);
   }
 
+  async function pickImage() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('権限エラー', 'カメラロールへのアクセスを許可してください');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+      setImageMime(result.assets[0].mimeType ?? undefined);
+    }
+  }
+
   function openAddModal() {
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setImageUri(null);
+    setImageMime(undefined);
     resetCandidates();
     setSendNotif(false);
     setModalVisible(true);
@@ -94,11 +115,12 @@ export default function AdminMysteryScreen() {
       vol: String(mystery.vol),
       title: mystery.title,
       content: mystery.content,
-      image_url: mystery.image_url ?? '',
       hint: mystery.hint ?? '',
       answer: canonical,
       is_published: mystery.is_published,
     });
+    setImageUri(mystery.image_url ?? null);
+    setImageMime(undefined);
     setAnswerCandidates(restored);
     setCandidatesShown(restored.length > 0);
     setSendNotif(false);
@@ -122,11 +144,27 @@ export default function AdminMysteryScreen() {
     const answerValue = selectedVariants.length > 0
       ? JSON.stringify(selectedVariants)
       : undefined;
+
+    let uploadedImageUrl: string | undefined;
+    if (imageUri) {
+      const editingMystery = mysteries.find(m => m.id === editingId);
+      const isNewImage = editingMystery ? imageUri !== editingMystery.image_url : true;
+      if (isNewImage) {
+        uploadedImageUrl = await uploadMysteryImage(imageUri, imageMime).catch(e => {
+          Alert.alert('画像アップロードエラー', e instanceof Error ? e.message : 'アップロードに失敗しました');
+          return undefined;
+        });
+        if (uploadedImageUrl === undefined) { setSaving(false); return; }
+      } else {
+        uploadedImageUrl = imageUri;
+      }
+    }
+
     const payload = {
       vol,
       title: form.title.trim(),
       content: form.content.trim(),
-      image_url: form.image_url.trim() || undefined,
+      image_url: uploadedImageUrl,
       hint: form.hint.trim() || undefined,
       answer: answerValue,
       is_published: form.is_published,
@@ -270,16 +308,19 @@ export default function AdminMysteryScreen() {
               placeholderTextColor={Colors.textSecondary}
             />
 
-            <Text style={styles.fieldLabel}>画像URL（任意）</Text>
-            <TextInput
-              style={styles.input}
-              value={form.image_url}
-              onChangeText={v => setForm(f => ({ ...f, image_url: v }))}
-              placeholder="https://..."
-              placeholderTextColor={Colors.textSecondary}
-              autoCapitalize="none"
-              keyboardType="url"
-            />
+            <Text style={styles.fieldLabel}>画像（任意）</Text>
+            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="contain" />
+              ) : (
+                <Text style={styles.imagePickerText}>📷 タップして画像を選択</Text>
+              )}
+            </TouchableOpacity>
+            {imageUri && (
+              <TouchableOpacity onPress={pickImage} style={styles.imageChangeBtn}>
+                <Text style={styles.imageChangeBtnText}>画像を変更</Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={styles.fieldLabel}>本文（謎の説明・任意）</Text>
             <TextInput
@@ -432,6 +473,16 @@ const styles = StyleSheet.create({
   },
   textArea: { minHeight: 160, paddingTop: 12 },
   hintArea: { minHeight: 80, paddingTop: 12 },
+
+  imagePicker: {
+    backgroundColor: Colors.surface, borderRadius: 10,
+    borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed',
+    height: 160, justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
+  },
+  imagePickerText: { color: Colors.textSecondary, fontSize: 14 },
+  imagePreview: { width: '100%', height: '100%' },
+  imageChangeBtn: { marginTop: 6, alignSelf: 'flex-start' },
+  imageChangeBtnText: { color: Colors.primary, fontSize: 13 },
 
   answerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   answerInput: { flex: 1 },
