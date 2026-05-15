@@ -15,12 +15,6 @@ import {
   Lato_700Bold,
   Lato_900Black,
 } from '@expo-google-fonts/lato';
-import {
-  NotoSansJP_300Light,
-  NotoSansJP_400Regular,
-  NotoSansJP_700Bold,
-  NotoSansJP_900Black,
-} from '@expo-google-fonts/noto-sans-jp';
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -33,16 +27,7 @@ export default function RootLayout() {
   // Webはシステムフォントを使うため Lato を読み込まない（~670kBの無駄なダウンロードを防ぐ）
   const [fontsLoadedResult] = useFonts(
     Platform.OS !== 'web'
-      ? {
-          Lato_300Light,
-          Lato_400Regular,
-          Lato_700Bold,
-          Lato_900Black,
-          NotoSansJP_300Light,
-          NotoSansJP_400Regular,
-          NotoSansJP_700Bold,
-          NotoSansJP_900Black,
-        }
+      ? { Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black }
       : {}
   );
   const fontsLoaded = Platform.OS === 'web' ? true : fontsLoadedResult;
