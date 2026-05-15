@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     width: 326,
   },
   instruction: {
+    fontFamily: fonts.jpRegular,
     color: '#fff',
     fontSize: 18,
     textAlign: 'center',
@@ -257,10 +258,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   processingText: {
+    fontFamily: fonts.jpRegular,
     color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
   },
   errorText: {
+    fontFamily: fonts.jpRegular,
     color: 'rgba(255,255,255,0.6)',
     fontSize: 16,
     textAlign: 'center',
@@ -274,6 +277,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backText: {
+    fontFamily: fonts.jpRegular,
     color: '#fff',
     fontSize: 16,
   },
@@ -283,6 +287,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   successText: {
+    fontFamily: fonts.jpBold,
     color: '#fff',
     fontSize: 27,
     letterSpacing: -0.44,
@@ -307,9 +312,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeWhiteBtnText: {
+    fontFamily: fonts.jpRegular,
     color: '#222',
     fontSize: 16,
-    fontWeight: '500',
     letterSpacing: -0.3,
   },
 });

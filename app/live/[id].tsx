@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dateText: {
+    fontFamily: fonts.regular,
     fontSize: 16,
     color: Colors.text,
   },
@@ -297,11 +298,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   infoLine: {
+    fontFamily: fonts.jpRegular,
     fontSize: 14,
     color: Colors.text,
     lineHeight: 20,
   },
   descriptionText: {
+    fontFamily: fonts.jpLight,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
@@ -328,6 +331,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   setListContent: {
+    fontFamily: fonts.jpRegular,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
@@ -342,9 +346,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkinButtonText: {
+    fontFamily: fonts.jpBold,
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
     letterSpacing: -0.3,
   },
   checkedButton: {
@@ -354,9 +358,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkedButtonText: {
+    fontFamily: fonts.jpBold,
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
   },
   navBar: {
     backgroundColor: '#fff',

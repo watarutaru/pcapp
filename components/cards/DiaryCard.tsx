@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   preview: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.jpRegular,
     fontSize: 12,
     color: '#222',
     width: '100%',

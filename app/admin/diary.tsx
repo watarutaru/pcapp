@@ -269,8 +269,8 @@ const styles = StyleSheet.create({
   },
   field: { marginBottom: 18 },
   fieldLabel: {
-    fontFamily: fonts.regular,
-    color: Colors.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5,
+    fontFamily: fonts.jpRegular,
+    color: Colors.textSecondary, fontSize: 12, marginBottom: 8, letterSpacing: 0.5,
   },
   authorRow: { flexDirection: 'row', gap: 12 },
   authorBtn: {

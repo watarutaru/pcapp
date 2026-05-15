@@ -317,6 +317,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   fieldLabel: {
+    fontFamily: fonts.jpRegular,
     fontSize: 12,
     color: '#fff',
     lineHeight: 16,
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   fieldValueMedium: {
-    fontFamily: fonts.medium,
+    fontFamily: fonts.jpRegular,
     lineHeight: 24,
   },
   outlineButton: {
@@ -341,9 +342,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   outlineButtonText: {
+    fontFamily: fonts.jpRegular,
     fontSize: 16,
     color: '#fff',
-    fontWeight: '500',
   },
   divider: {
     marginHorizontal: 24,
@@ -388,12 +389,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalTitle: {
+    fontFamily: fonts.jpBold,
     fontSize: 18,
-    fontWeight: '700',
     color: Colors.text,
     marginBottom: 16,
   },
   modalInput: {
+    fontFamily: fonts.jpRegular,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 12,
@@ -412,7 +414,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalCancelText: { color: Colors.textSecondary, fontSize: 15 },
+  modalCancelText: { fontFamily: fonts.jpRegular, color: Colors.textSecondary, fontSize: 15 },
   modalSaveBtn: {
     flex: 1,
     backgroundColor: Colors.primary,
@@ -420,5 +422,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalSaveText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  modalSaveText: { fontFamily: fonts.jpBold, color: '#fff', fontSize: 15 },
 });

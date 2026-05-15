@@ -144,6 +144,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
+    fontFamily: fonts.jpRegular,
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
@@ -208,7 +209,7 @@ const modalStyles = StyleSheet.create({
     color: Colors.text,
   },
   noPlatformText: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.jpRegular,
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',

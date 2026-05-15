@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   nickname: {
-    fontFamily: fonts.jpBlack,
+    fontFamily: fonts.jpBold,
     fontSize: 24,
     color: '#222',
     lineHeight: 32,

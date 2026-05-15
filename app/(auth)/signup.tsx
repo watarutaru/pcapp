@@ -6,6 +6,7 @@ import {
 import { Link } from 'expo-router';
 import { signUpWithPassword } from '@/lib/auth';
 import { Colors } from '@/constants/colors';
+import { fonts } from '@/lib/fonts';
 
 export default function SignupScreen() {
   const [email, setEmail] = useState('');
@@ -123,25 +124,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   logo: {
+    fontFamily: fonts.condensed,
     fontSize: 28,
-    fontWeight: 'bold',
     color: Colors.text,
     textAlign: 'center',
     marginBottom: 8,
   },
   title: {
+    fontFamily: fonts.jpBold,
     fontSize: 20,
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 40,
   },
   description: {
+    fontFamily: fonts.jpRegular,
     fontSize: 15,
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },
   input: {
+    fontFamily: fonts.regular,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -160,19 +164,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   buttonText: {
+    fontFamily: fonts.jpBold,
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
   },
   linkButton: {
     marginTop: 24,
     alignItems: 'center',
   },
   linkText: {
+    fontFamily: fonts.jpRegular,
     color: Colors.textSecondary,
     fontSize: 14,
   },
   errorText: {
+    fontFamily: fonts.jpRegular,
     color: '#ef4444',
     fontSize: 14,
     textAlign: 'center',

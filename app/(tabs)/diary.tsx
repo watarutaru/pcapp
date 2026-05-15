@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
     borderColor: '#f9f9f9',
   },
   emptyText: {
+    fontFamily: fonts.jpRegular,
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,

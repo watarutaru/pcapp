@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
-  emptyText: { color: Colors.textSecondary, fontSize: 15, textAlign: 'center', marginTop: 40 },
+  emptyText: { fontFamily: fonts.jpRegular, color: Colors.textSecondary, fontSize: 15, textAlign: 'center', marginTop: 40 },
   row: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: Colors.surface, borderRadius: 12, padding: 14,
@@ -368,8 +368,8 @@ const styles = StyleSheet.create({
   },
   field: { marginBottom: 18 },
   fieldLabel: {
-    fontFamily: fonts.regular,
-    color: Colors.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5,
+    fontFamily: fonts.jpRegular,
+    color: Colors.textSecondary, fontSize: 12, marginBottom: 8, letterSpacing: 0.5,
   },
   input: {
     backgroundColor: Colors.background, borderRadius: 10, borderWidth: 1, borderColor: Colors.border,

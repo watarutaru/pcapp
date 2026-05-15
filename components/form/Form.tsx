@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   label: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.jpRegular,
     fontSize: 11,
     color: '#222',
   },
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderColor: '#ee1133',
   },
   errorText: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.jpRegular,
     fontSize: 11,
     color: '#ee1133',
   },

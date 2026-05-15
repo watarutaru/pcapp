@@ -348,6 +348,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   hintText: {
+    fontFamily: fonts.jpRegular,
     fontSize: 12,
     color: '#364153',
     lineHeight: 23,
@@ -361,6 +362,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   answerInput: {
+    fontFamily: fonts.regular,
     flex: 1,
     height: 44,
     borderWidth: 1,
@@ -379,9 +381,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButtonText: {
+    fontFamily: fonts.jpBold,
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
     letterSpacing: -0.3,
   },
   wrongBanner: {
@@ -397,6 +399,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   wrongText: {
+    fontFamily: fonts.jpRegular,
     fontSize: 12,
     color: '#364153',
     lineHeight: 23,
@@ -419,6 +422,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   correctSubtitle: {
+    fontFamily: fonts.jpRegular,
     fontSize: 12,
     color: '#fff',
     lineHeight: 20,

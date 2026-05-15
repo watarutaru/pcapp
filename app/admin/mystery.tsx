@@ -462,8 +462,8 @@ const styles = StyleSheet.create({
   modalContent: { padding: 20, gap: 4, paddingBottom: 60 },
 
   fieldLabel: {
-    fontFamily: fonts.regular,
-    fontSize: 12, fontWeight: '600', color: Colors.textSecondary,
+    fontFamily: fonts.jpRegular,
+    fontSize: 12, color: Colors.textSecondary,
     letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, marginBottom: 6,
   },
   input: {

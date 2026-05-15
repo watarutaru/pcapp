@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   ActivityIndicator, TouchableOpacity,
 } from 'react-native';
+import { fonts } from '@/lib/fonts';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { getNextLive } from '@/lib/lives';
@@ -191,6 +192,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   errorText: {
+    fontFamily: fonts.jpRegular,
     color: Colors.textSecondary,
     fontSize: 16,
   },
@@ -225,6 +227,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
+    fontFamily: fonts.jpRegular,
     color: Colors.textSecondary,
     fontSize: 14,
   },

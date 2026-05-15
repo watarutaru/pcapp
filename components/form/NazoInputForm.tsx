@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   submitLabel: {
-    fontFamily: fonts.medium,
+    fontFamily: fonts.jpBold,
     fontSize: 16,
     color: '#fff',
     lineHeight: 24,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   errorText: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.jpRegular,
     fontSize: 12,
     color: '#222',
   },
