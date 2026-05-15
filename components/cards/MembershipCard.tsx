@@ -16,7 +16,7 @@ export default function MembershipCard({ memberNumber = '', nickname = '', style
         <Text style={styles.nickname}>{nickname}</Text>
       </View>
       <View style={styles.logoArea}>
-        <FanclubLogo width="100%" height={155} />
+        <FanclubLogo width="100%" height="100%" />
       </View>
     </View>
   );
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   logoArea: {
-    height: 155,
+    aspectRatio: 350 / 169,
     overflow: 'hidden',
   },
 });
