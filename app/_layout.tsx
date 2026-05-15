@@ -19,6 +19,7 @@ import {
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const notificationListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const router = useRouter();
@@ -52,9 +53,15 @@ export default function RootLayout() {
 
     const linkingSub = Linking.addEventListener('url', ({ url }) => handleAuthUrl(url));
 
+    // Supabase が応答しない場合のフォールバック（5秒後に強制初期化）
+    initTimeoutRef.current = setTimeout(() => setInitialized(true), 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
-      if (event === 'INITIAL_SESSION') setInitialized(true);
+      if (event === 'INITIAL_SESSION') {
+        clearTimeout(initTimeoutRef.current);
+        setInitialized(true);
+      }
 
       if (event === 'PASSWORD_RECOVERY') {
         router.replace('/(auth)/reset-password');
@@ -98,6 +105,7 @@ export default function RootLayout() {
     }
 
     return () => {
+      clearTimeout(initTimeoutRef.current);
       linkingSub.remove();
       subscription.unsubscribe();
       notificationListener.current?.remove();
