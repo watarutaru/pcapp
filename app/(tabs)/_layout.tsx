@@ -25,6 +25,7 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false }}
       tabBar={(props) => {
         const routeName = props.state.routes[props.state.index]?.name ?? 'index';
+        if (routeName === 'mypage') return null;
         const activeTab = ROUTE_TO_TAB[routeName];
         return (
           <BottomNav
