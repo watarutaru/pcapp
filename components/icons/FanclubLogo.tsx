@@ -1,6 +1,6 @@
 import { SvgXml } from 'react-native-svg';
 
-const xml = `<svg width="350" height="169" viewBox="0 0 350 169" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+const xml = `<svg viewBox="0 0 350 169" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M349.778 168.044H0.222443L0.222443 143.19L349.778 100.91V168.044Z" fill="#EFEFEF"/>
 <path d="M349.808 101.058L0.25267 143.884L0.1922 143.389L349.748 100.562L349.808 101.058Z" fill="#898989"/>
 <path d="M7.16088 142.319L0.444808 155.518L6.10352e-05 155.291L6.71613 142.092L7.16088 142.319Z" fill="#898989"/>
