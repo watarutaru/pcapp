@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontFamily: fonts.jpBold,
+    fontFamily: fonts.medium,
     fontSize: 16,
     color: '#222',
   },

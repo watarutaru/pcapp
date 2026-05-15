@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   title: {
-    fontFamily: fonts.jpBold,
+    fontFamily: fonts.medium,
     fontSize: 16,
     color: '#222',
   },

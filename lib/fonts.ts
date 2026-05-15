@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 
 const WEB_STACK = "'Avenir Next', 'AvenirNext-Regular', Lato, 'Noto Sans JP', sans-serif";
 const WEB_STACK_MED = "'Avenir Next', 'AvenirNext-Medium', Lato, 'Noto Sans JP', sans-serif";
+const WEB_STACK_BOLD = "'Avenir Next', 'AvenirNext-Bold', Lato, 'Noto Sans JP', sans-serif";
 const WEB_STACK_HEAVY = "'Avenir Next', 'AvenirNext-Heavy', Lato, 'Noto Sans JP', sans-serif";
 const WEB_CONDENSED = "'Avenir Next Condensed', 'AvenirNextCondensed-Regular', Lato, 'Noto Sans JP', sans-serif";
 const WEB_CONDENSED_MED = "'Avenir Next Condensed', 'AvenirNextCondensed-Medium', Lato, 'Noto Sans JP', sans-serif";
@@ -61,9 +62,9 @@ export const fonts = {
     default: WEB_STACK,
   })!,
   jpBold: Platform.select({
-    ios: 'AvenirNext-Medium',
+    ios: 'AvenirNext-Bold',
     android: 'Lato_700Bold',
-    default: WEB_STACK_MED,
+    default: WEB_STACK_BOLD,
   })!,
   jpBlack: Platform.select({
     ios: 'AvenirNext-Heavy',
