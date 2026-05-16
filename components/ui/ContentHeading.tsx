@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    ...fonts.condensedMedium,
+    ...fonts.condensed,
     fontSize: 18,
     lineHeight: 18,
     letterSpacing: 1,
