@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     borderColor: '#898989',
   },
   label: {
-    fontFamily: fonts.condensedMedium,
+    ...fonts.condensedMedium,
     fontSize: 16,
     lineHeight: 16,
     letterSpacing: 1,

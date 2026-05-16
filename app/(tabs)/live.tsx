@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     borderColor: '#f9f9f9',
   },
   emptyText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
@@ -261,19 +261,19 @@ const modalStyles = StyleSheet.create({
     gap: 8,
   },
   dateText: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: Colors.text,
   },
   titleText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 20,
     fontWeight: '500',
     color: '#0a0a0a',
     lineHeight: 28,
   },
   descriptionText: {
-    fontFamily: fonts.jpLight,
+    ...fonts.jpLight,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,

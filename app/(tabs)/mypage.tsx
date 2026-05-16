@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: fonts.condensed,
+    ...fonts.condensed,
     fontSize: 24,
     color: '#fff',
     letterSpacing: 1,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   editButtonText: {
-    fontFamily: fonts.jpLight,
+    ...fonts.jpLight,
     fontSize: 12,
     color: '#fff',
     lineHeight: 14,
@@ -317,19 +317,19 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   fieldLabel: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#fff',
     lineHeight: 16,
   },
   fieldValue: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: '#fff',
     lineHeight: 20,
   },
   fieldValueMedium: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     lineHeight: 24,
   },
   outlineButton: {
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   outlineButtonText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 16,
     color: '#fff',
   },
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   linkText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 14,
     color: '#fff',
     lineHeight: 20,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 14,
     color: 'rgba(255,255,255,0.5)',
     lineHeight: 20,
@@ -389,13 +389,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalTitle: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 18,
     color: Colors.text,
     marginBottom: 16,
   },
   modalInput: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 12,
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalCancelText: { fontFamily: fonts.jpRegular, color: Colors.textSecondary, fontSize: 15 },
+  modalCancelText: { ...fonts.jpRegular, color: Colors.textSecondary, fontSize: 15 },
   modalSaveBtn: {
     flex: 1,
     backgroundColor: Colors.primary,
@@ -422,5 +422,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalSaveText: { fontFamily: fonts.jpBold, color: '#fff', fontSize: 15 },
+  modalSaveText: { ...fonts.jpBold, color: '#fff', fontSize: 15 },
 });

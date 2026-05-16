@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   text: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     lineHeight: 22,
     color: '#222',

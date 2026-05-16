@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   topBarTitle: {
-    fontFamily: fonts.condensedBold,
+    ...fonts.condensedBold,
     fontSize: 20,
     letterSpacing: 1,
     color: '#fff',
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   tabBtnText: {
-    fontFamily: fonts.condensedMedium,
+    ...fonts.condensedMedium,
     fontSize: 13,
     letterSpacing: 0.5,
     color: '#aaa',
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   sectionTitleText: {
-    fontFamily: fonts.condensedBold,
+    ...fonts.condensedBold,
     fontSize: 14,
     letterSpacing: 1,
     color: '#222',
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     borderColor: '#efefef',
   },
   storyLabel: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 10,
     letterSpacing: 0.5,
     color: '#898989',
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     borderColor: '#efefef',
   },
   iconName: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 9,
     color: '#898989',
     textAlign: 'center',

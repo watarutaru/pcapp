@@ -54,12 +54,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 16,
     color: '#222',
   },
   type: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 12,
     color: '#898989',
   },

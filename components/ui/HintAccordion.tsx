@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hintText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#222',
   },

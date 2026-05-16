@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     borderColor: '#222',
     borderRadius: 6,
     paddingHorizontal: 16,
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: '#222',
   },
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   submitLabel: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 16,
     color: '#fff',
     lineHeight: 24,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   errorText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#222',
   },
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   successText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: '#fff',
   },

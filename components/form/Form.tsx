@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   label: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 11,
     color: '#222',
   },
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     borderColor: '#222',
     borderRadius: 6,
     paddingHorizontal: 12,
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: '#222',
   },
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderColor: '#ee1133',
   },
   errorText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 11,
     color: '#ee1133',
   },

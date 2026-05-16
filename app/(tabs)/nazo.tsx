@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     borderColor: '#f9f9f9',
   },
   emptyText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
@@ -221,12 +221,12 @@ const modalStyles = StyleSheet.create({
     gap: 8,
   },
   volText: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: '#222',
   },
   titleText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 20,
     color: '#364153',
   },
@@ -243,7 +243,7 @@ const modalStyles = StyleSheet.create({
     height: '100%',
   },
   contentText: {
-    fontFamily: fonts.jpLight,
+    ...fonts.jpLight,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,

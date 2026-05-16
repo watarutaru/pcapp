@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: fonts.condensed,
+    ...fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   dateText: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 14,
     color: '#222',
   },
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   authorName: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 14,
     color: '#0a0a0a',
     lineHeight: 28,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   contentText: {
-    fontFamily: fonts.jpLight,
+    ...fonts.jpLight,
     fontSize: 14,
     color: '#222',
     lineHeight: 23,

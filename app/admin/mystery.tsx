@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   modalContent: { padding: 20, gap: 4, paddingBottom: 60 },
 
   fieldLabel: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12, color: Colors.textSecondary,
     letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 16, marginBottom: 6,
   },

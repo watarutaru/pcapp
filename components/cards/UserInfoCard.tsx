@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   editLabel: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     lineHeight: 14,
     color: '#fff',
@@ -69,13 +69,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   rowLabel: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 11,
     color: '#fff',
     letterSpacing: -0.44,
   },
   rowValue: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: '#fff',
   },

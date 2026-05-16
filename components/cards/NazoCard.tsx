@@ -38,12 +38,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   vol: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 16,
     color: '#222',
   },
   title: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 12,
     color: '#222',
   },

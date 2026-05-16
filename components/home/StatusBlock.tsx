@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontFamily: fonts.condensed,
+    ...fonts.condensed,
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 1,
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   valueBody: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 16,
     color: '#222',
   },
@@ -60,13 +60,13 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   pointsNumber: {
-    fontFamily: fonts.heavy,
+    ...fonts.heavy,
     fontSize: 18,
     letterSpacing: 0.36,
     color: '#222',
   },
   pointsUnit: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 15,
     color: '#222',
   },

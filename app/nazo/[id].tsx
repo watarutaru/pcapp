@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: fonts.condensed,
+    ...fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -291,12 +291,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   volText: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: '#222',
   },
   titleText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 20,
     color: '#364153',
   },
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   contentText: {
-    fontFamily: fonts.jpLight,
+    ...fonts.jpLight,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   hintLabel: {
-    fontFamily: fonts.condensedMedium,
+    ...fonts.condensedMedium,
     fontSize: 18,
     color: '#222',
     letterSpacing: 1,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   hintText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#364153',
     lineHeight: 23,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   answerInput: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     flex: 1,
     height: 44,
     borderWidth: 1,
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButtonText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     color: '#fff',
     fontSize: 16,
     letterSpacing: -0.3,
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   wrongText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#364153',
     lineHeight: 23,
@@ -416,13 +416,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   correctTitle: {
-    fontFamily: fonts.jpBlack,
+    ...fonts.jpBlack,
     fontSize: 17,
     color: '#fff',
     fontWeight: '700',
   },
   correctSubtitle: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#fff',
     lineHeight: 20,

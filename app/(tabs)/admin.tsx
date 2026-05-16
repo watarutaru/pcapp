@@ -118,6 +118,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemText: { flex: 1, gap: 2 },
-  itemLabel: { fontFamily: fonts.jpBold, fontSize: 15, color: Colors.text },
-  itemSub: { fontFamily: fonts.regular, fontSize: 12, color: Colors.textSecondary },
+  itemLabel: { ...fonts.jpBold, fontSize: 15, color: Colors.text },
+  itemSub: { ...fonts.regular, fontSize: 12, color: Colors.textSecondary },
 });

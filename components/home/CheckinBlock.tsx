@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   label: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 11,
     color: '#fff',
     letterSpacing: -0.44,

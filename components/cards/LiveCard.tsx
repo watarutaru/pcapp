@@ -90,22 +90,22 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   date: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 14,
     color: '#222',
   },
   title: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 16,
     color: '#222',
   },
   detail: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 11,
     color: '#222',
   },
   detailEn: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 11,
     color: '#222',
   },

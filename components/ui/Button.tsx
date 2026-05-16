@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   label: {
-    fontFamily: fonts.medium,
+    ...fonts.medium,
     fontSize: 16,
     lineHeight: 16,
   },

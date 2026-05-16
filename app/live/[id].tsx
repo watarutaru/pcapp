@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: fonts.condensed,
+    ...fonts.condensed,
     fontSize: 24,
     color: Colors.text,
     letterSpacing: 1,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   draggedText: {
-    fontFamily: fonts.condensedBold,
+    ...fonts.condensedBold,
     fontSize: 10,
     color: '#fff',
     letterSpacing: 1,
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dateText: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: Colors.text,
   },
   titleText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 20,
     fontWeight: '500',
     color: '#0a0a0a',
@@ -298,13 +298,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   infoLine: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: Colors.text,
     lineHeight: 20,
   },
   descriptionText: {
-    fontFamily: fonts.jpLight,
+    ...fonts.jpLight,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
@@ -324,14 +324,14 @@ const styles = StyleSheet.create({
     height: 30,
   },
   setListTitle: {
-    fontFamily: fonts.condensedMedium,
+    ...fonts.condensedMedium,
     fontSize: 18,
     color: '#222',
     letterSpacing: 1,
     lineHeight: 18,
   },
   setListContent: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: '#364153',
     lineHeight: 23,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkinButtonText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     color: '#fff',
     fontSize: 16,
     letterSpacing: -0.3,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkedButtonText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     color: '#fff',
     fontSize: 16,
   },

@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   song: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     lineHeight: 22,
     color: '#364153',

@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   brandTitle: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 36,
     fontWeight: '400',
     color: '#231815',
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   brandSubtitle: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     fontWeight: '300',
     color: '#231815',
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   heading: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 16,
     color: '#222',
     textAlign: 'center',
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   fieldLabel: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 11,
     color: '#222',
   },
@@ -181,19 +181,19 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   submitButtonText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 16,
     color: '#fff',
     lineHeight: 24,
   },
   errorText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 13,
     color: '#c0392b',
     textAlign: 'center',
   },
   infoText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 13,
     color: '#27ae60',
     textAlign: 'center',

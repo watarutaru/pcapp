@@ -39,14 +39,14 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   memberNumber: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 12,
     color: '#222',
     lineHeight: 20,
     letterSpacing: 0.2,
   },
   nickname: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 24,
     color: '#222',
     lineHeight: 32,

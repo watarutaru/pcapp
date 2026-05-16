@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     borderColor: '#898989',
   },
   label: {
-    fontFamily: fonts.condensedBold,
+    ...fonts.condensedBold,
     fontSize: 10,
     lineHeight: 16,
     letterSpacing: 1,

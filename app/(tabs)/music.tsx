@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
@@ -173,14 +173,14 @@ const modalStyles = StyleSheet.create({
     gap: 4,
   },
   titleText: {
-    fontFamily: fonts.jpBold,
+    ...fonts.jpBold,
     fontSize: 20,
     fontWeight: '500',
     color: '#0a0a0a',
     lineHeight: 28,
   },
   typeText: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 13,
     color: Colors.textSecondary,
   },
@@ -188,7 +188,7 @@ const modalStyles = StyleSheet.create({
     gap: 8,
   },
   platformHeading: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 13,
     color: Colors.textSecondary,
     marginBottom: 4,
@@ -204,12 +204,12 @@ const modalStyles = StyleSheet.create({
     borderRadius: 10,
   },
   platformLabel: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 15,
     color: Colors.text,
   },
   noPlatformText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',

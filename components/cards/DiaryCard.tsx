@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   date: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 14,
     color: '#222',
   },
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   writerName: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 14,
     color: '#222',
   },
@@ -81,12 +81,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   avatarInitial: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     color: '#222',
   },
   preview: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 12,
     color: '#222',
     width: '100%',

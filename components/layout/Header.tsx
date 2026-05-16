@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: fonts.condensed,
+    ...fonts.condensed,
     fontSize: 24,
     lineHeight: 32,
     letterSpacing: 1,

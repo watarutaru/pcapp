@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   brandTitle: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 36,
     fontWeight: '400',
     color: '#231815',
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   brandSubtitle: {
-    fontFamily: fonts.regular,
+    ...fonts.regular,
     fontSize: 16,
     fontWeight: '300',
     color: '#231815',
@@ -156,19 +156,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signupText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: '#898989',
     lineHeight: 14,
   },
   errorText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 13,
     color: '#c0392b',
     textAlign: 'center',
   },
   infoText: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 13,
     color: '#27ae60',
     textAlign: 'center',

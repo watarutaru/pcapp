@@ -17,7 +17,7 @@ export default function ButtonText({ label, onPress, style }: Props) {
 
 const styles = StyleSheet.create({
   label: {
-    fontFamily: fonts.jpRegular,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: '#898989',
     lineHeight: 16,
