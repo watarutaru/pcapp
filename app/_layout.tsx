@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -126,7 +126,7 @@ export default function RootLayout() {
     }
   }, [session, initialized, segments]);
 
-  if (!initialized || !isFontReady) return null;
+  if (!initialized || !isFontReady) return <View style={{ flex: 1, backgroundColor: '#1a1a2e' }} />;
 
   return (
     <>
