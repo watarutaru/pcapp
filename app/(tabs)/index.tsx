@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
-    width: undefined,
   },
   nextWaveSection: {
     gap: 8,
