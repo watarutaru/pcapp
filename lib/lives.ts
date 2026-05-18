@@ -66,6 +66,10 @@ export interface CreateLiveInput {
   venue: string;
   category: LiveCategory;
   description?: string;
+  open_time?: string;
+  ticket_info?: string;
+  artists?: string;
+  set_list?: string;
 }
 
 export async function createLive(input: CreateLiveInput): Promise<void> {
@@ -75,6 +79,10 @@ export async function createLive(input: CreateLiveInput): Promise<void> {
     venue: input.venue,
     category: input.category,
     description: input.description ?? '',
+    open_time: input.open_time || null,
+    ticket_info: input.ticket_info || null,
+    artists: input.artists || null,
+    set_list: input.set_list || null,
   });
   if (error) throw error;
 }
@@ -86,6 +94,10 @@ export async function updateLive(id: string, input: CreateLiveInput): Promise<vo
     venue: input.venue,
     category: input.category,
     description: input.description ?? '',
+    open_time: input.open_time || null,
+    ticket_info: input.ticket_info || null,
+    artists: input.artists || null,
+    set_list: input.set_list || null,
   }).eq('id', id);
   if (error) throw error;
 }

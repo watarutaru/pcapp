@@ -18,9 +18,13 @@ const INIT_FORM = {
   title: '',
   date: '',
   time: '',
+  open_time: '',
   venue: '',
   category: 'ライブ' as LiveCategory,
+  ticket_info: '',
+  artists: '',
   description: '',
+  set_list: '',
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -34,9 +38,13 @@ function liveToForm(live: Live) {
     title: live.title,
     date: dateStr,
     time: timeStr,
+    open_time: live.open_time ?? '',
     venue: live.venue,
     category: live.category,
+    ticket_info: live.ticket_info ?? '',
+    artists: live.artists ?? '',
     description: live.description,
+    set_list: live.set_list ?? '',
   };
 }
 
@@ -90,7 +98,14 @@ export default function AdminLiveScreen() {
     }
     setSaving(true);
     try {
-      const input = { ...form, date: dateStr };
+      const input = {
+        ...form,
+        date: dateStr,
+        open_time: form.open_time || undefined,
+        ticket_info: form.ticket_info || undefined,
+        artists: form.artists || undefined,
+        set_list: form.set_list || undefined,
+      };
       if (editingId) {
         await updateLive(editingId, input);
       } else {
@@ -150,7 +165,7 @@ export default function AdminLiveScreen() {
             />
           </Field>
 
-          <Field label="日付 *　/　時間（任意）">
+          <Field label="日付 *　/　開演時間（任意）">
             <View style={styles.dateTimeRow}>
               <DateInput
                 value={form.date}
@@ -163,6 +178,14 @@ export default function AdminLiveScreen() {
                 style={styles.timeInput}
               />
             </View>
+          </Field>
+
+          <Field label="開場時間（任意）">
+            <TimeInput
+              value={form.open_time}
+              onChange={v => setForm(f => ({ ...f, open_time: v }))}
+              style={{}}
+            />
           </Field>
 
           <Field label="会場 *">
@@ -188,6 +211,26 @@ export default function AdminLiveScreen() {
             </View>
           </Field>
 
+          <Field label="チケット情報（任意）">
+            <TextInput
+              style={styles.input}
+              value={form.ticket_info}
+              onChangeText={v => setForm(f => ({ ...f, ticket_info: v }))}
+              placeholder="チケット情報"
+              placeholderTextColor={Colors.textSecondary}
+            />
+          </Field>
+
+          <Field label="出演者（任意）">
+            <TextInput
+              style={styles.input}
+              value={form.artists}
+              onChangeText={v => setForm(f => ({ ...f, artists: v }))}
+              placeholder="出演者名"
+              placeholderTextColor={Colors.textSecondary}
+            />
+          </Field>
+
           <Field label="詳細（任意）">
             <TextInput
               style={[styles.input, styles.inputMulti]}
@@ -197,6 +240,18 @@ export default function AdminLiveScreen() {
               placeholderTextColor={Colors.textSecondary}
               multiline
               numberOfLines={4}
+            />
+          </Field>
+
+          <Field label="セットリスト（任意・1行1曲）">
+            <TextInput
+              style={[styles.input, styles.inputMulti]}
+              value={form.set_list}
+              onChangeText={v => setForm(f => ({ ...f, set_list: v }))}
+              placeholder={"1. 曲名\n2. 曲名\n3. 曲名"}
+              placeholderTextColor={Colors.textSecondary}
+              multiline
+              numberOfLines={6}
             />
           </Field>
 
