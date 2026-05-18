@@ -4,17 +4,17 @@ import type { TextStyle } from 'react-native';
 // フォールバック優先順位: Avenir Next > Lato > Noto Sans JP
 // iOS   : Avenir Next（システムフォント）
 // Android: Lato（ロード済み）
-// Web   : Lato（useFonts でロード済み）> Avenir Next（macOS Safari のみ）> フォールバック
+// Web   : Avenir Next（macOS）> Lato（useFonts でロード済み）> フォールバック
 //
 // fontWeight を明示することで Web（Netlify）でも正しい太さで描画される
 
-const WEB_STACK = "Lato, 'Avenir Next', 'Noto Sans JP', sans-serif";
-const WEB_STACK_MED = "Lato, 'Avenir Next', 'Noto Sans JP', sans-serif";
-const WEB_STACK_BOLD = "Lato, 'Avenir Next', 'Noto Sans JP', sans-serif";
-const WEB_STACK_HEAVY = "Lato, 'Avenir Next', 'Noto Sans JP', sans-serif";
-const WEB_CONDENSED = "Lato, 'Avenir Next Condensed', 'Noto Sans JP', sans-serif";
-const WEB_CONDENSED_MED = "Lato, 'Avenir Next Condensed', 'Noto Sans JP', sans-serif";
-const WEB_CONDENSED_BOLD = "Lato, 'Avenir Next Condensed', 'Noto Sans JP', sans-serif";
+const WEB_STACK = "'Avenir Next', Lato, 'Noto Sans JP', sans-serif";
+const WEB_STACK_MED = "'Avenir Next', Lato, 'Noto Sans JP', sans-serif";
+const WEB_STACK_BOLD = "'Avenir Next', Lato, 'Noto Sans JP', sans-serif";
+const WEB_STACK_HEAVY = "'Avenir Next', Lato, 'Noto Sans JP', sans-serif";
+const WEB_CONDENSED = "'Avenir Next Condensed', Lato, 'Noto Sans JP', sans-serif";
+const WEB_CONDENSED_MED = "'Avenir Next Condensed', Lato, 'Noto Sans JP', sans-serif";
+const WEB_CONDENSED_BOLD = "'Avenir Next Condensed', Lato, 'Noto Sans JP', sans-serif";
 
 type FontStyle = Pick<TextStyle, 'fontFamily' | 'fontWeight'>;
 
