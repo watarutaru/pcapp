@@ -24,7 +24,9 @@ export default function RootLayout() {
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const router = useRouter();
   const segments = useSegments();
-  const [fontsLoaded] = useFonts({ Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black });
+  const [fontsLoaded, fontError] = useFonts({ Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black });
+  // web: CSSで既にロード済み。native: ロード完了かエラーで続行
+  const isFontReady = Platform.OS === 'web' || fontsLoaded || !!fontError;
 
   async function handleAuthUrl(url: string) {
     const fragment = url.split('#')[1];
@@ -124,7 +126,7 @@ export default function RootLayout() {
     }
   }, [session, initialized, segments]);
 
-  if (!initialized || !fontsLoaded) return null;
+  if (!initialized || !isFontReady) return null;
 
   return (
     <>
