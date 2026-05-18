@@ -126,7 +126,7 @@ export default function RootLayout() {
     }
   }, [session, initialized, segments]);
 
-  if (!initialized || !isFontReady) return <View style={{ flex: 1, backgroundColor: '#1a1a2e' }} />;
+  if (!initialized || !isFontReady) return <View style={{ flex: 1, backgroundColor: '#f9f9f9' }} />;
 
   return (
     <>
