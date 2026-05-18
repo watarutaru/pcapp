@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
 import { fonts } from '@/lib/fonts';
 
 import Button from '@/components/ui/Button';
@@ -348,7 +347,6 @@ function IconsSection() {
 // ─────────────── Main screen ───────────────
 
 export default function ComponentLibraryScreen() {
-  const router = useRouter();
   const [activeSection, setActiveSection] = useState<Section>('UI');
 
   const renderSection = () => {
@@ -366,9 +364,6 @@ export default function ComponentLibraryScreen() {
     <View style={styles.screen}>
       {/* Top bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <IcArrowLeft size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={styles.topBarTitle}>Component Library</Text>
       </View>
 
@@ -418,12 +413,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  backBtn: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   topBarTitle: {
     ...fonts.condensedBold,
