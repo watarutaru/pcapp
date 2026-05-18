@@ -28,7 +28,7 @@ export default function NazoInputForm({
         end={{ x: 1, y: 0 }}
         style={[styles.successContainer, style]}
       >
-        <IcLock variant="gray" size={32} />
+        <IcLock variant="white" size={32} />
         <Text style={styles.successText}>謎を解きあかした！</Text>
       </LinearGradient>
     );
