@@ -10,11 +10,11 @@ import * as Linking from 'expo-linking';
 import { UnreadProvider } from '@/lib/UnreadContext';
 import {
   useFonts,
-  Lato_300Light,
-  Lato_400Regular,
-  Lato_700Bold,
-  Lato_900Black,
-} from '@expo-google-fonts/lato';
+  NotoSansMono_300Light,
+  NotoSansMono_400Regular,
+  NotoSansMono_700Bold,
+  NotoSansMono_900Black,
+} from '@expo-google-fonts/noto-sans-mono';
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -24,7 +24,7 @@ export default function RootLayout() {
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const router = useRouter();
   const segments = useSegments();
-  const [fontsLoaded, fontError] = useFonts({ Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black });
+  const [fontsLoaded, fontError] = useFonts({ NotoSansMono_300Light, NotoSansMono_400Regular, NotoSansMono_700Bold, NotoSansMono_900Black });
   // web: CSSで既にロード済み。native: ロード完了かエラーで続行
   const isFontReady = Platform.OS === 'web' || fontsLoaded || !!fontError;
 
