@@ -190,10 +190,10 @@ export default function MyPageScreen() {
                 <Text style={styles.linkText}>管理ページ</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => router.push('/terms' as any)} activeOpacity={0.7}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => router.push('/privacy' as any)} activeOpacity={0.7}>
               <Text style={styles.linkText}>プライバシーポリシー</Text>
             </TouchableOpacity>
           </View>
