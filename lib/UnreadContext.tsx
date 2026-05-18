@@ -30,18 +30,20 @@ export function UnreadProvider({ children }: { children: ReactNode }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const [liveReadIds, diaryReadIds, liveIds, diaryIds] = await Promise.all([
+    const [liveReadIds, diaryReadIds, mysteryReadIds, liveIds, diaryIds, mysteryIds] = await Promise.all([
       getReadIds(user.id, 'live'),
       getReadIds(user.id, 'diary'),
+      getReadIds(user.id, 'mystery'),
       getItemIds('lives'),
       getItemIds('diaries'),
+      getItemIds('mysteries', { is_published: true }),
     ]);
 
-    setReadIds({ live: liveReadIds, diary: diaryReadIds, mystery: new Set() });
+    setReadIds({ live: liveReadIds, diary: diaryReadIds, mystery: mysteryReadIds });
     setUnreadCounts({
       live: liveIds.filter(id => !liveReadIds.has(id)).length,
       diary: diaryIds.filter(id => !diaryReadIds.has(id)).length,
-      mystery: 0,
+      mystery: mysteryIds.filter(id => !mysteryReadIds.has(id)).length,
     });
   }, []);
 

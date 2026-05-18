@@ -18,7 +18,16 @@ export async function getReadIds(userId: string, type: ItemType): Promise<Set<st
   return new Set((data ?? []).map((r: { item_id: string }) => r.item_id));
 }
 
-export async function getItemIds(table: 'lives' | 'diaries'): Promise<string[]> {
-  const { data } = await supabase.from(table).select('id');
+export async function getItemIds(
+  table: 'lives' | 'diaries' | 'mysteries',
+  filter?: Record<string, unknown>
+): Promise<string[]> {
+  let query = supabase.from(table).select('id');
+  if (filter) {
+    for (const [col, val] of Object.entries(filter)) {
+      query = query.eq(col, val);
+    }
+  }
+  const { data } = await query;
   return (data ?? []).map((r: { id: string }) => r.id);
 }
