@@ -24,13 +24,7 @@ export default function RootLayout() {
   const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
   const router = useRouter();
   const segments = useSegments();
-  // Webはシステムフォントを使うため Lato を読み込まない（~670kBの無駄なダウンロードを防ぐ）
-  const [fontsLoadedResult] = useFonts(
-    Platform.OS !== 'web'
-      ? { Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black }
-      : {}
-  );
-  const fontsLoaded = Platform.OS === 'web' ? true : fontsLoadedResult;
+  const [fontsLoaded] = useFonts({ Lato_300Light, Lato_400Regular, Lato_700Bold, Lato_900Black });
 
   async function handleAuthUrl(url: string) {
     const fragment = url.split('#')[1];
