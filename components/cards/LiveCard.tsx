@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, ViewStyle, ImageSourcePropType } from 'react-native';
+import { View, Text, Image, StyleSheet, ViewStyle, ImageSourcePropType, Platform } from 'react-native';
 import { fonts } from '@/lib/fonts';
 import Tag from '@/components/ui/Tag';
 
@@ -96,6 +96,12 @@ const styles = StyleSheet.create({
   },
   title: {
     ...fonts.medium,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Medium',
+      android: 'NotoSansMono_700Bold',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
+    fontWeight: '500',
     fontSize: 16,
     color: '#222',
   },

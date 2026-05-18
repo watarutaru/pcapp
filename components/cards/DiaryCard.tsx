@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { fonts } from '@/lib/fonts';
 
 type Props = {
@@ -49,6 +49,11 @@ const styles = StyleSheet.create({
   },
   date: {
     ...fonts.regular,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Regular',
+      android: 'NotoSansMono_400Regular',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
     fontSize: 14,
     color: '#222',
   },
@@ -61,6 +66,11 @@ const styles = StyleSheet.create({
   },
   writerName: {
     ...fonts.regular,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Regular',
+      android: 'NotoSansMono_400Regular',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
     fontSize: 14,
     color: '#222',
   },

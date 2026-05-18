@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   valueBody: {
     ...fonts.medium,
     fontSize: 16,
+    letterSpacing: 1,
     color: '#222',
   },
   pointsRow: {
@@ -60,12 +61,14 @@ const styles = StyleSheet.create({
   },
   pointsNumber: {
     ...fonts.heavy,
+    fontWeight: '600',
     fontSize: 18,
     letterSpacing: 0.36,
     color: '#222',
   },
   pointsUnit: {
     ...fonts.medium,
+    fontWeight: '400',
     fontSize: 15,
     color: '#222',
   },

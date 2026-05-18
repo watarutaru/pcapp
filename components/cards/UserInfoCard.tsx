@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { fonts } from '@/lib/fonts';
 import { IcEdit } from '@/components/icons';
 
@@ -60,6 +60,11 @@ const styles = StyleSheet.create({
   },
   editLabel: {
     ...fonts.jpRegular,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Regular',
+      android: 'NotoSansMono_400Regular',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
     fontSize: 14,
     lineHeight: 14,
     color: '#fff',
@@ -70,12 +75,22 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     ...fonts.jpRegular,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Regular',
+      android: 'NotoSansMono_400Regular',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
     fontSize: 11,
     color: '#fff',
     letterSpacing: -0.44,
   },
   rowValue: {
     ...fonts.jpRegular,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Regular',
+      android: 'NotoSansMono_400Regular',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
     fontSize: 14,
     color: '#fff',
   },

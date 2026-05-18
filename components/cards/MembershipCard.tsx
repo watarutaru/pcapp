@@ -47,9 +47,9 @@ const styles = StyleSheet.create({
   },
   nickname: {
     ...fonts.jpBold,
-    fontSize: 24,
+    fontSize: 20,
     color: '#222',
-    lineHeight: 32,
+    lineHeight: 28,
   },
   logoArea: {
     aspectRatio: 350 / 169,

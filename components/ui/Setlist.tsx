@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { fonts } from '@/lib/fonts';
 import { IcSetlist } from '@/components/icons';
 import ContentHeading from '@/components/ui/ContentHeading';
@@ -33,6 +33,11 @@ const styles = StyleSheet.create({
   },
   song: {
     ...fonts.jpRegular,
+    fontFamily: Platform.select({
+      ios: 'AvenirNext-Regular',
+      android: 'NotoSansMono_400Regular',
+      default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
+    }),
     fontSize: 14,
     lineHeight: 22,
     color: '#364153',

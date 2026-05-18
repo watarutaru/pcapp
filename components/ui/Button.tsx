@@ -69,8 +69,10 @@ const styles = StyleSheet.create({
   },
   label: {
     ...fonts.medium,
+    fontWeight: '400',
     fontSize: 16,
     lineHeight: 16,
+    letterSpacing: 1,
   },
   labelLight: {
     color: '#fff',
