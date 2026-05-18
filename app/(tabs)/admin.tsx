@@ -70,7 +70,7 @@ export default function AdminScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="ADMIN" showBack={false} />
+      <Header title="ADMIN" showBack={false} showClose onClose={() => router.replace('/(tabs)')} />
       <ScrollView contentContainerStyle={styles.list}>
         {MENU_ITEMS.map(({ key, label, sub, Icon, href }) => (
           <TouchableOpacity
