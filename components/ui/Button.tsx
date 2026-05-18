@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { fonts } from '@/lib/fonts';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'white';
+export type ButtonVariant = 'primary' | 'secondary' | 'white' | 'ghost';
 
 type Props = {
   label: string;
@@ -63,6 +63,11 @@ const styles = StyleSheet.create({
   },
   white: {
     backgroundColor: '#fff',
+  },
+  ghost: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   disabled: {
     opacity: 0.5,

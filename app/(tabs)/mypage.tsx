@@ -7,20 +7,14 @@ import {
   KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SvgXml } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { getOrCreateProfile, updateProfile } from '@/lib/profiles';
 import { signOut } from '@/lib/auth';
 import { Profile } from '@/lib/types';
 import { Colors } from '@/constants/colors';
-
-const pencilSvg = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M1 10.5V13h2.5l7.373-7.373-2.5-2.5L1 10.5zM12.805 3.695a.664.664 0 0 0 0-.94L11.245 1.195a.664.664 0 0 0-.94 0L9.13 2.37l2.5 2.5 1.175-1.175z" fill="white"/>
-</svg>`;
-
-const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-</svg>`;
+import Header from '@/components/layout/Header';
+import UserInfoCard from '@/components/cards/UserInfoCard';
+import Button from '@/components/ui/Button';
 
 export default function MyPageScreen() {
   const router = useRouter();
@@ -120,7 +114,6 @@ export default function MyPageScreen() {
   return (
     <>
       <View style={styles.container}>
-        {/* グラデーション背景 */}
         <LinearGradient
           colors={['rgba(101,76,171,0.4)', 'rgba(234,96,37,0.4)']}
           start={{ x: 0.75, y: 0 }}
@@ -133,57 +126,33 @@ export default function MyPageScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="rgba(255,255,255,0.5)" />}
           showsVerticalScrollIndicator={false}
         >
-          {/* ヘッダー */}
-          <View style={styles.header}>
-            <View style={styles.headerSpacer} />
-            <Text style={styles.title}>ACCOUNT</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => router.back()}
-              activeOpacity={0.7}
-            >
-              <SvgXml xml={closeSvg} width={24} height={24} />
-            </TouchableOpacity>
-          </View>
+          <Header
+            title="ACCOUNT"
+            variant="white"
+            showBack={false}
+            showClose
+            onClose={() => router.back()}
+            style={styles.header}
+          />
 
-          {/* 情報カード */}
           {profile && (
-            <View style={styles.infoCard}>
-              {/* 変更ボタン */}
-              <TouchableOpacity style={styles.editButton} onPress={openEditModal} activeOpacity={0.7}>
-                <SvgXml xml={pencilSvg} width={14} height={14} />
-                <Text style={styles.editButtonText}>変更</Text>
-              </TouchableOpacity>
-
-              {/* 会員番号 */}
-              <View style={styles.field}>
-                <Text style={styles.fieldLabel}>会員番号</Text>
-                <Text style={styles.fieldValue}>{memberId}</Text>
-              </View>
-
-              {/* ニックネーム */}
-              <View style={styles.field}>
-                <Text style={styles.fieldLabel}>ニックネーム</Text>
-                <Text style={[styles.fieldValue, styles.fieldValueMedium]}>{profile.nickname}</Text>
-              </View>
-
-              {/* メールアドレス */}
-              <View style={styles.field}>
-                <Text style={styles.fieldLabel}>メールアドレス</Text>
-                <Text style={styles.fieldValue}>{email}</Text>
-              </View>
-            </View>
+            <UserInfoCard
+              memberNumber={memberId}
+              nickname={profile.nickname}
+              email={email}
+              onEdit={openEditModal}
+              style={styles.infoCard}
+            />
           )}
 
-          {/* 通知設定 */}
-          <TouchableOpacity style={styles.outlineButton} activeOpacity={0.7}>
-            <Text style={styles.outlineButtonText}>通知設定</Text>
-          </TouchableOpacity>
+          <Button
+            variant="ghost"
+            label="通知設定"
+            style={styles.button}
+          />
 
-          {/* 区切り線 */}
           <View style={styles.divider} />
 
-          {/* リンク */}
           <View style={styles.linkList}>
             {profile?.role === 'admin' && (
               <TouchableOpacity onPress={() => router.push('/(tabs)/admin')} activeOpacity={0.7}>
@@ -198,11 +167,13 @@ export default function MyPageScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ログアウト・削除 */}
           <View style={styles.bottomActions}>
-            <TouchableOpacity style={styles.outlineButton} onPress={handleSignOut} activeOpacity={0.7}>
-              <Text style={styles.outlineButtonText}>ログアウト</Text>
-            </TouchableOpacity>
+            <Button
+              variant="ghost"
+              label="ログアウト"
+              onPress={handleSignOut}
+              style={styles.button}
+            />
             <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.7}>
               <Text style={styles.deleteText}>アカウント削除</Text>
             </TouchableOpacity>
@@ -210,7 +181,6 @@ export default function MyPageScreen() {
         </ScrollView>
       </View>
 
-      {/* ニックネーム編集モーダル */}
       <Modal visible={editModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
           style={styles.modalOverlay}
@@ -269,88 +239,19 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerSpacer: {
-    width: 32,
-  },
-  title: {
-    flex: 1,
-    ...fonts.condensed,
-    fontSize: 24,
-    color: '#fff',
-    letterSpacing: 1,
-    lineHeight: 32,
-    textAlign: 'center',
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   infoCard: {
     marginHorizontal: 24,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    gap: 16,
     marginBottom: 24,
   },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    alignSelf: 'flex-end',
-  },
-  editButtonText: {
-    ...fonts.jpLight,
-    fontSize: 12,
-    color: '#fff',
-    lineHeight: 14,
-  },
-  field: {
-    gap: 4,
-  },
-  fieldLabel: {
-    ...fonts.jpRegular,
-    fontSize: 12,
-    color: '#fff',
-    lineHeight: 16,
-  },
-  fieldValue: {
-    ...fonts.regular,
-    fontSize: 16,
-    color: '#fff',
-    lineHeight: 20,
-  },
-  fieldValueMedium: {
-    ...fonts.jpRegular,
-    lineHeight: 24,
-  },
-  outlineButton: {
+  button: {
     marginHorizontal: 24,
-    height: 50,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  outlineButtonText: {
-    ...fonts.jpRegular,
-    fontSize: 16,
-    color: '#fff',
   },
   divider: {
     marginHorizontal: 24,
     marginVertical: 24,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.5)',
   },
   linkList: {
     marginHorizontal: 24,
@@ -358,18 +259,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   linkText: {
-    ...fonts.jpBold,
+    ...fonts.jpRegular,
     fontSize: 14,
     color: '#fff',
     lineHeight: 20,
   },
   bottomActions: {
-    marginHorizontal: 0,
     gap: 16,
     alignItems: 'center',
   },
   deleteText: {
-    ...fonts.jpBold,
+    ...fonts.medium,
+    fontWeight: '500',
     fontSize: 14,
     color: 'rgba(255,255,255,0.5)',
     lineHeight: 20,
