@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { fonts } from '@/lib/fonts';
 import { useRouter } from 'expo-router';
+import { setPendingLiveId } from '@/lib/liveDeepLink';
 import { supabase } from '@/lib/supabase';
 import { getNextLive } from '@/lib/lives';
 import { Profile, Live } from '@/lib/types';
@@ -155,7 +156,7 @@ export default function HomeScreen() {
           />
           {nextLive ? (
             <TouchableOpacity
-              onPress={() => router.push(`/live/${nextLive.id}` as any)}
+              onPress={() => { setPendingLiveId(nextLive.id); router.push('/(tabs)/live' as any); }}
               activeOpacity={0.8}
             >
               <LiveCard
