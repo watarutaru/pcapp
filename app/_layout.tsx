@@ -54,8 +54,9 @@ export default function RootLayout() {
 
     const linkingSub = Linking.addEventListener('url', ({ url }) => handleAuthUrl(url));
 
-    // Supabase が応答しない場合のフォールバック（5秒後に強制初期化）
-    initTimeoutRef.current = setTimeout(() => setInitialized(true), 5000);
+    // Supabase が応答しない場合のフォールバック（8秒後に強制初期化）
+    // Supabase 内部ロックタイムアウト(5000ms)より長く設定しておく
+    initTimeoutRef.current = setTimeout(() => setInitialized(true), 8000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
