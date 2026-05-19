@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: 40,
   },
 });
@@ -190,6 +191,7 @@ const modalStyles = StyleSheet.create({
   dateText: {
     ...fonts.regular,
     fontSize: 14,
+    lineHeight: 20,
     color: '#222',
   },
   authorGroup: {
