@@ -19,7 +19,11 @@ export default function CheckinBlock({ onPress, style }: Props) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#222',
+    borderWidth: 1,
+    borderColor: 'transparent',
     borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     minHeight: 80,
     alignItems: 'center',
     justifyContent: 'center',
