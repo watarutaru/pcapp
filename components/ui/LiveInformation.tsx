@@ -12,10 +12,10 @@ type Props = {
 export default function LiveInformation({ venue, time, ticket, performers, style }: Props) {
   return (
     <View style={[styles.container, style]}>
-      {venue && <Text style={styles.text}>会場　{venue}</Text>}
-      {time && <Text style={styles.text}>時間　{time}</Text>}
-      {ticket && <Text style={styles.text}>チケット　{ticket}</Text>}
-      {performers && <Text style={styles.text}>出演　{performers}</Text>}
+      {venue && <Text style={styles.text}><Text style={styles.label}>会場</Text>　{venue}</Text>}
+      {time && <Text style={styles.text}><Text style={styles.label}>時間</Text>　{time}</Text>}
+      {ticket && <Text style={styles.text}><Text style={styles.label}>チケット</Text>　{ticket}</Text>}
+      {performers && <Text style={styles.text}><Text style={styles.label}>出演</Text>　{performers}</Text>}
     </View>
   );
 }
@@ -38,5 +38,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: '#222',
+  },
+  label: {
+    ...fonts.jpBold,
   },
 });
