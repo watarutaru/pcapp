@@ -15,6 +15,7 @@ import { Colors } from '@/constants/colors';
 import Header from '@/components/layout/Header';
 import UserInfoCard from '@/components/cards/UserInfoCard';
 import Button from '@/components/ui/Button';
+import LegalModal from '@/components/modals/LegalModal';
 
 export default function MyPageScreen() {
   const router = useRouter();
@@ -25,6 +26,8 @@ export default function MyPageScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editNickname, setEditNickname] = useState('');
   const [saving, setSaving] = useState(false);
+  const [termsVisible, setTermsVisible] = useState(false);
+  const [privacyVisible, setPrivacyVisible] = useState(false);
 
   const load = useCallback(async (userId: string, userEmail: string) => {
     try {
@@ -44,7 +47,7 @@ export default function MyPageScreen() {
   }, [load]);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         load(session.user.id, session.user.email ?? '');
       } else {
@@ -132,7 +135,6 @@ export default function MyPageScreen() {
             showBack={false}
             showClose
             onClose={() => router.back()}
-            style={styles.header}
           />
 
           {profile && (
@@ -159,10 +161,10 @@ export default function MyPageScreen() {
                 <Text style={styles.linkText}>管理ページ</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => router.push('/terms' as any)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => setTermsVisible(true)} activeOpacity={0.7}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/privacy' as any)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => setPrivacyVisible(true)} activeOpacity={0.7}>
               <Text style={styles.linkText}>プライバシーポリシー</Text>
             </TouchableOpacity>
           </View>
@@ -174,12 +176,15 @@ export default function MyPageScreen() {
               onPress={handleSignOut}
               style={styles.button}
             />
-            <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.7} style={styles.deleteButton}>
               <Text style={styles.deleteText}>アカウント削除</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
+
+      <LegalModal visible={termsVisible} onClose={() => setTermsVisible(false)} type="terms" />
+      <LegalModal visible={privacyVisible} onClose={() => setPrivacyVisible(false)} type="privacy" />
 
       <Modal visible={editModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
@@ -237,9 +242,6 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 48,
   },
-  header: {
-    paddingTop: 56,
-  },
   infoCard: {
     marginHorizontal: 24,
     marginBottom: 24,
@@ -266,7 +268,9 @@ const styles = StyleSheet.create({
   },
   bottomActions: {
     gap: 16,
-    alignItems: 'center',
+  },
+  deleteButton: {
+    alignSelf: 'center',
   },
   deleteText: {
     ...fonts.medium,
@@ -292,6 +296,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     ...fonts.jpBold,
     fontSize: 18,
+    lineHeight: 26,
     color: Colors.text,
     marginBottom: 16,
   },
@@ -315,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalCancelText: { ...fonts.jpRegular, color: Colors.textSecondary, fontSize: 15 },
+  modalCancelText: { ...fonts.jpRegular, color: Colors.textSecondary, fontSize: 15, lineHeight: 22 },
   modalSaveBtn: {
     flex: 1,
     backgroundColor: Colors.primary,
@@ -323,5 +328,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalSaveText: { ...fonts.jpBold, color: '#fff', fontSize: 15 },
+  modalSaveText: { ...fonts.jpBold, color: '#fff', fontSize: 15, lineHeight: 22 },
 });

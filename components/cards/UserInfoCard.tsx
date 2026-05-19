@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
       default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
     }),
     fontSize: 14,
-    lineHeight: 14,
+    lineHeight: 20,
     color: '#fff',
   },
   row: {
@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
       default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
     }),
     fontSize: 11,
+    lineHeight: 16,
     color: '#fff',
     letterSpacing: -0.44,
   },
@@ -92,6 +93,7 @@ const styles = StyleSheet.create({
       default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
     }),
     fontSize: 14,
+    lineHeight: 20,
     color: '#fff',
   },
 });

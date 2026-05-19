@@ -40,11 +40,13 @@ const styles = StyleSheet.create({
   vol: {
     ...fonts.medium,
     fontSize: 16,
+    lineHeight: 22,
     color: '#222',
   },
   title: {
     ...fonts.regular,
     fontSize: 12,
+    lineHeight: 18,
     color: '#222',
   },
 });

@@ -56,11 +56,13 @@ const styles = StyleSheet.create({
   title: {
     ...fonts.medium,
     fontSize: 16,
+    lineHeight: 22,
     color: '#222',
   },
   type: {
     ...fonts.regular,
     fontSize: 12,
+    lineHeight: 18,
     color: '#898989',
   },
 });

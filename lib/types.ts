@@ -54,6 +54,7 @@ export interface Mystery {
   title: string;
   content: string;
   image_url?: string;
+  explanation_image_url?: string;
   hint?: string;
   answer?: string;
   is_published: boolean;

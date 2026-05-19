@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   valueBody: {
     ...fonts.medium,
     fontSize: 16,
+    lineHeight: 22,
     letterSpacing: 1,
     color: '#222',
   },
@@ -63,6 +64,7 @@ const styles = StyleSheet.create({
     ...fonts.heavy,
     fontWeight: '600',
     fontSize: 18,
+    lineHeight: 24,
     letterSpacing: 0.36,
     color: '#222',
   },
@@ -70,6 +72,7 @@ const styles = StyleSheet.create({
     ...fonts.medium,
     fontWeight: '400',
     fontSize: 15,
+    lineHeight: 24,
     color: '#222',
   },
 });

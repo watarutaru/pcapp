@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: 'flex-end',
     marginRight: 24,
-    marginBottom: 8,
+    marginBottom: 24,
   },
   cardContent: {
     paddingHorizontal: 24,

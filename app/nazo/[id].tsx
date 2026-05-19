@@ -29,6 +29,19 @@ const lockOpenSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.o
   <path d="M7 11V7a5 5 0 0 1 9.9-1" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
+const lockOpenRedSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="11" width="18" height="11" rx="2" stroke="#ea6025" stroke-width="1.5"/>
+  <path d="M7 11V7a5 5 0 0 1 9.9-1" stroke="#ea6025" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
+const arrowLeftSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 12L6 8L10 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const arrowRightSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M6 4L10 8L6 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
 type AnswerState = 'idle' | 'wrong' | 'correct';
 
 export default function NazoDetailScreen() {
@@ -39,6 +52,7 @@ export default function NazoDetailScreen() {
   const [hintOpen, setHintOpen] = useState(false);
   const [answer, setAnswer] = useState('');
   const [answerState, setAnswerState] = useState<AnswerState>('idle');
+  const [showExplanation, setShowExplanation] = useState(false);
   const [prevId, setPrevId] = useState<string | null>(null);
   const [nextId, setNextId] = useState<string | null>(null);
   const { markRead } = useUnread();
@@ -66,7 +80,13 @@ export default function NazoDetailScreen() {
       variants = [mystery.answer];
     }
     const correct = variants.some(v => input === v.trim().toLowerCase());
-    setAnswerState(correct ? 'correct' : 'wrong');
+    if (correct) {
+      setAnswerState('correct');
+      // 解説画像があればデフォルトで解説を表示
+      setShowExplanation(true);
+    } else {
+      setAnswerState('wrong');
+    }
   }
 
   if (loading) {
@@ -87,6 +107,13 @@ export default function NazoDetailScreen() {
       </View>
     );
   }
+
+  const isCorrect = answerState === 'correct';
+  const hasExplanationImage = !!mystery.explanation_image_url;
+  // 表示する画像を決定
+  const displayImageUrl = isCorrect && showExplanation && hasExplanationImage
+    ? mystery.explanation_image_url!
+    : mystery.image_url;
 
   return (
     <KeyboardAvoidingView
@@ -110,27 +137,54 @@ export default function NazoDetailScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Vol + タイトル */}
+          {/* Vol + タイトル + 正解ステータス */}
           <View style={styles.titleSection}>
-            <Text style={styles.volText}>Vol.{mystery.vol}</Text>
-            <Text style={styles.titleText}>{mystery.title}</Text>
+            <View style={styles.titleRow}>
+              <View style={styles.titleTexts}>
+                <Text style={styles.volText}>Vol.{mystery.vol}</Text>
+                <Text style={styles.titleText}>{mystery.title}</Text>
+              </View>
+              {isCorrect && (
+                <View style={styles.decodeBadge}>
+                  <SvgXml xml={lockOpenRedSvg} width={20} height={20} />
+                  <Text style={styles.decodeBadgeText}>Decode</Text>
+                </View>
+              )}
+            </View>
           </View>
 
           {/* 謎画像 */}
-          {mystery.image_url ? (
+          {displayImageUrl ? (
             <View style={styles.imageWrapper}>
               <Image
-                source={{ uri: mystery.image_url }}
+                source={{ uri: displayImageUrl }}
                 style={styles.mysteryImage}
                 resizeMode="cover"
               />
+              {/* 正解後の画像切り替えボタン（解説画像がある場合のみ） */}
+              {isCorrect && hasExplanationImage && (
+                <TouchableOpacity
+                  style={styles.imageSwitchBtn}
+                  onPress={() => setShowExplanation(v => !v)}
+                  activeOpacity={0.8}
+                >
+                  <SvgXml
+                    xml={showExplanation ? arrowLeftSvg : arrowRightSvg}
+                    width={16}
+                    height={16}
+                  />
+                  <Text style={styles.imageSwitchText}>
+                    {showExplanation ? '問題へ' : '解説へ'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : mystery.content ? (
             <Text style={styles.contentText}>{mystery.content}</Text>
           ) : null}
 
-          {/* HINT アコーディオン */}
-          {mystery.hint ? (
+          {/* HINT アコーディオン（解説表示中は非表示） */}
+          {mystery.hint && !(isCorrect && showExplanation) ? (
             <TouchableOpacity
               style={styles.hintBox}
               onPress={() => setHintOpen(v => !v)}
@@ -192,10 +246,7 @@ export default function NazoDetailScreen() {
             >
               <View style={styles.correctContent}>
                 <SvgXml xml={lockOpenSvg} width={22} height={32} />
-                <View>
-                  <Text style={styles.correctTitle}>正解</Text>
-                  <Text style={styles.correctSubtitle}>謎を解きあかした！</Text>
-                </View>
+                <Text style={styles.correctTitle}>謎を解きあかした！</Text>
               </View>
             </LinearGradient>
           )}
@@ -276,7 +327,7 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: 'flex-end',
     marginRight: 24,
-    marginBottom: 8,
+    marginBottom: 24,
     width: 32,
     height: 32,
     justifyContent: 'center',
@@ -290,6 +341,16 @@ const styles = StyleSheet.create({
   titleSection: {
     gap: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  titleTexts: {
+    flex: 1,
+    gap: 8,
+  },
   volText: {
     ...fonts.regular,
     fontSize: 16,
@@ -299,6 +360,17 @@ const styles = StyleSheet.create({
     ...fonts.jpBold,
     fontSize: 20,
     color: '#364153',
+  },
+  decodeBadge: {
+    alignItems: 'center',
+    gap: 2,
+    paddingBottom: 2,
+  },
+  decodeBadgeText: {
+    ...fonts.condensed,
+    fontSize: 10,
+    color: '#ea6025',
+    letterSpacing: 0.5,
   },
   imageWrapper: {
     width: '100%',
@@ -311,6 +383,24 @@ const styles = StyleSheet.create({
   mysteryImage: {
     width: '100%',
     height: '100%',
+  },
+  imageSwitchBtn: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#222',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderTopRightRadius: 10,
+  },
+  imageSwitchText: {
+    ...fonts.jpRegular,
+    fontSize: 14,
+    color: '#fff',
+    lineHeight: 14,
   },
   contentText: {
     ...fonts.jpLight,
@@ -416,16 +506,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   correctTitle: {
-    ...fonts.jpBlack,
-    fontSize: 17,
+    ...fonts.jpBold,
+    fontSize: 14,
     color: '#fff',
-    fontWeight: '700',
-  },
-  correctSubtitle: {
-    ...fonts.jpRegular,
-    fontSize: 12,
-    color: '#fff',
-    lineHeight: 20,
   },
   navBar: {
     backgroundColor: '#fff',

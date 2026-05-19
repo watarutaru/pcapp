@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { getMysteries, createMystery, updateMystery, deleteMystery, uploadMysteryImage } from '@/lib/mysteries';
+import { getMysteries, createMystery, updateMystery, deleteMystery, uploadMysteryImage, uploadMysteryExplanationImage } from '@/lib/mysteries';
 import { sendPushNotificationToAll } from '@/lib/notifications';
 import { Mystery } from '@/lib/types';
 import Header from '@/components/layout/Header';
@@ -27,6 +27,8 @@ export default function AdminMysteryScreen() {
   const [saving, setSaving] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageMime, setImageMime] = useState<string | undefined>(undefined);
+  const [explanationImageUri, setExplanationImageUri] = useState<string | null>(null);
+  const [explanationImageMime, setExplanationImageMime] = useState<string | undefined>(undefined);
   const [answerCandidates, setAnswerCandidates] = useState<Array<{ text: string; selected: boolean }>>([]);
   const [candidatesShown, setCandidatesShown] = useState(false);
   const [sendNotif, setSendNotif] = useState(false);
@@ -89,11 +91,29 @@ export default function AdminMysteryScreen() {
     }
   }
 
+  async function pickExplanationImage() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('権限エラー', 'カメラロールへのアクセスを許可してください');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setExplanationImageUri(result.assets[0].uri);
+      setExplanationImageMime(result.assets[0].mimeType ?? undefined);
+    }
+  }
+
   function openAddModal() {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setImageUri(null);
     setImageMime(undefined);
+    setExplanationImageUri(null);
+    setExplanationImageMime(undefined);
     resetCandidates();
     setSendNotif(false);
     setModalVisible(true);
@@ -121,6 +141,8 @@ export default function AdminMysteryScreen() {
     });
     setImageUri(mystery.image_url ?? null);
     setImageMime(undefined);
+    setExplanationImageUri(mystery.explanation_image_url ?? null);
+    setExplanationImageMime(undefined);
     setAnswerCandidates(restored);
     setCandidatesShown(restored.length > 0);
     setSendNotif(false);
@@ -160,11 +182,27 @@ export default function AdminMysteryScreen() {
       }
     }
 
+    let uploadedExplanationImageUrl: string | undefined;
+    if (explanationImageUri) {
+      const editingMystery = mysteries.find(m => m.id === editingId);
+      const isNewImage = editingMystery ? explanationImageUri !== editingMystery.explanation_image_url : true;
+      if (isNewImage) {
+        uploadedExplanationImageUrl = await uploadMysteryExplanationImage(explanationImageUri, explanationImageMime).catch(e => {
+          Alert.alert('解説画像アップロードエラー', e instanceof Error ? e.message : 'アップロードに失敗しました');
+          return undefined;
+        });
+        if (uploadedExplanationImageUrl === undefined) { setSaving(false); return; }
+      } else {
+        uploadedExplanationImageUrl = explanationImageUri;
+      }
+    }
+
     const payload = {
       vol,
       title: form.title.trim(),
       content: form.content.trim(),
       image_url: uploadedImageUrl,
+      explanation_image_url: uploadedExplanationImageUrl,
       hint: form.hint.trim() || undefined,
       answer: answerValue,
       is_published: form.is_published,
@@ -308,7 +346,7 @@ export default function AdminMysteryScreen() {
               placeholderTextColor={Colors.textSecondary}
             />
 
-            <Text style={styles.fieldLabel}>画像（任意）</Text>
+            <Text style={styles.fieldLabel}>問題画像（任意）</Text>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
               {imageUri ? (
                 <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="contain" />
@@ -319,6 +357,20 @@ export default function AdminMysteryScreen() {
             {imageUri && (
               <TouchableOpacity onPress={pickImage} style={styles.imageChangeBtn}>
                 <Text style={styles.imageChangeBtnText}>画像を変更</Text>
+              </TouchableOpacity>
+            )}
+
+            <Text style={styles.fieldLabel}>解説画像（任意）</Text>
+            <TouchableOpacity style={styles.imagePicker} onPress={pickExplanationImage}>
+              {explanationImageUri ? (
+                <Image source={{ uri: explanationImageUri }} style={styles.imagePreview} resizeMode="contain" />
+              ) : (
+                <Text style={styles.imagePickerText}>📷 タップして解説画像を選択</Text>
+              )}
+            </TouchableOpacity>
+            {explanationImageUri && (
+              <TouchableOpacity onPress={pickExplanationImage} style={styles.imageChangeBtn}>
+                <Text style={styles.imageChangeBtnText}>解説画像を変更</Text>
               </TouchableOpacity>
             )}
 
