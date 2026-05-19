@@ -142,7 +142,7 @@ export default function HomeScreen() {
               style={styles.tile}
             />
             <CheckinBlock
-              onPress={() => router.push('/(tabs)/mypage' as any)}
+              onPress={() => router.push('/qr-checkin' as any)}
               style={styles.tile}
             />
           </View>
