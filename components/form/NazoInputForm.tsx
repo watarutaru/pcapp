@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
   errorText: {
     ...fonts.jpRegular,
     fontSize: 12,
+    lineHeight: 18,
     color: '#222',
   },
   successContainer: {
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
   successText: {
     ...fonts.jpRegular,
     fontSize: 14,
+    lineHeight: 20,
     color: '#fff',
   },
 });

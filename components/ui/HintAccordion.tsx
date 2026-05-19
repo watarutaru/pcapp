@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
   hintText: {
     ...fonts.jpRegular,
     fontSize: 12,
+    lineHeight: 18,
     color: '#222',
   },
 });

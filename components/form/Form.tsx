@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
   label: {
     ...fonts.jpRegular,
     fontSize: 11,
+    lineHeight: 16,
     color: '#222',
   },
   input: {
@@ -92,6 +93,7 @@ const styles = StyleSheet.create({
   errorText: {
     ...fonts.jpRegular,
     fontSize: 11,
+    lineHeight: 16,
     color: '#ee1133',
   },
 });

@@ -212,6 +212,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: 40,
   },
 });
@@ -223,11 +224,13 @@ const modalStyles = StyleSheet.create({
   volText: {
     ...fonts.regular,
     fontSize: 16,
+    lineHeight: 22,
     color: '#222',
   },
   titleText: {
     ...fonts.jpBold,
     fontSize: 20,
+    lineHeight: 28,
     color: '#364153',
   },
   imageWrapper: {

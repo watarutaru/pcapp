@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     ...fonts.condensedMedium,
     fontWeight: '400',
     fontSize: 14,
-    lineHeight: 14,
+    lineHeight: 20,
     letterSpacing: 1,
   },
   labelLight: {

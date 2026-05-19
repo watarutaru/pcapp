@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
   date: {
     ...fonts.regular,
     fontSize: 14,
+    lineHeight: 20,
     color: '#222',
   },
   title: {
@@ -103,16 +104,19 @@ const styles = StyleSheet.create({
     }),
     fontWeight: '500',
     fontSize: 16,
+    lineHeight: 22,
     color: '#222',
   },
   detail: {
     ...fonts.jpRegular,
     fontSize: 11,
+    lineHeight: 16,
     color: '#222',
   },
   detailEn: {
     ...fonts.regular,
     fontSize: 11,
+    lineHeight: 16,
     color: '#222',
   },
   illustContainer: {

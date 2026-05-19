@@ -61,13 +61,13 @@ export default function BottomNav({ activeTab = 'home', onTabPress, badges, styl
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: '#efefef',
     paddingHorizontal: 32,
-    minHeight: 64,
+    paddingTop: 16,
   },
   item: {
     alignItems: 'center',
@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#fff',
     fontSize: 10,
+    lineHeight: 14,
     fontWeight: 'bold',
   },
 });

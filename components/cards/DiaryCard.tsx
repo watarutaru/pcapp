@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
       default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
     }),
     fontSize: 14,
+    lineHeight: 20,
     color: '#222',
   },
   writerInfo: {
@@ -72,6 +73,7 @@ const styles = StyleSheet.create({
       default: "'Avenir Next', 'Noto Sans Mono', 'Noto Sans JP', sans-serif",
     }),
     fontSize: 14,
+    lineHeight: 20,
     color: '#222',
   },
   avatar: {
@@ -93,11 +95,13 @@ const styles = StyleSheet.create({
   avatarInitial: {
     ...fonts.regular,
     fontSize: 16,
+    lineHeight: 22,
     color: '#222',
   },
   preview: {
     ...fonts.jpRegular,
     fontSize: 12,
+    lineHeight: 18,
     color: '#222',
     width: '100%',
   },

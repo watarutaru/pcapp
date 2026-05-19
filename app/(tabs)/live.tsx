@@ -5,6 +5,7 @@ import {
   RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { consumePendingLiveId } from '@/lib/liveDeepLink';
 import { getLives, getUserCheckins } from '@/lib/lives';
 import { supabase } from '@/lib/supabase';
 import { Live } from '@/lib/types';
@@ -61,6 +62,7 @@ export default function LiveScreen() {
       setCheckedInIds(new Set(checkins.map(c => c.live_id)));
     }
     setLoading(false);
+    return livesData;
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -70,8 +72,27 @@ export default function LiveScreen() {
   }, [load, refreshUnread]);
 
   useFocusEffect(useCallback(() => {
-    load();
-    refreshUnread();
+    async function run() {
+      const [livesData] = await Promise.all([load(), refreshUnread()]);
+      const pendingId = consumePendingLiveId();
+      if (pendingId && livesData) {
+        const now = new Date();
+        const upcomingLives = livesData.filter((l: Live) => new Date(l.date) >= now);
+        const upcomingIdx = upcomingLives.findIndex((l: Live) => l.id === pendingId);
+        if (upcomingIdx >= 0) {
+          setTab('UPCOMING');
+          setSelectedIndex(upcomingIdx);
+        } else {
+          const historyLives = livesData.filter((l: Live) => new Date(l.date) < now);
+          const historyIdx = historyLives.findIndex((l: Live) => l.id === pendingId);
+          if (historyIdx >= 0) {
+            setTab('HISTORY');
+            setSelectedIndex(historyIdx);
+          }
+        }
+      }
+    }
+    run();
   }, [load, refreshUnread]));
 
   const now = new Date();
@@ -252,6 +273,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: Colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: 40,
   },
 });
@@ -263,6 +285,7 @@ const modalStyles = StyleSheet.create({
   dateText: {
     ...fonts.regular,
     fontSize: 16,
+    lineHeight: 22,
     color: Colors.text,
   },
   titleText: {

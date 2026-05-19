@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   label: {
     ...fonts.condensed,
     fontSize: 18,
-    lineHeight: 18,
+    lineHeight: 24,
     letterSpacing: 1,
     color: '#222',
   },
