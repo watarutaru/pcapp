@@ -1,4 +1,5 @@
 import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import IcAccount from '@/components/icons/IcAccount';
 
 type Props = {
@@ -7,8 +8,9 @@ type Props = {
 };
 
 export default function HomeHeader({ onAccountPress, style }: Props) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, { paddingTop: insets.top + 10 }, style]}>
       <TouchableOpacity onPress={onAccountPress} hitSlop={8}>
         <IcAccount size={32} color="#222" />
       </TouchableOpacity>
