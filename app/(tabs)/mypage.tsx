@@ -147,12 +147,6 @@ export default function MyPageScreen() {
             />
           )}
 
-          <Button
-            variant="ghost"
-            label="通知設定"
-            style={styles.button}
-          />
-
           <View style={styles.divider} />
 
           <View style={styles.linkList}>
@@ -161,6 +155,9 @@ export default function MyPageScreen() {
                 <Text style={styles.linkText}>管理ページ</Text>
               </TouchableOpacity>
             )}
+            <TouchableOpacity activeOpacity={0.7}>
+              <Text style={styles.linkText}>通知設定</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => setTermsVisible(true)} activeOpacity={0.7}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
