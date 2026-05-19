@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1,
   },
   iconRight: {
     position: 'absolute',
@@ -81,5 +82,6 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1,
   },
 });
