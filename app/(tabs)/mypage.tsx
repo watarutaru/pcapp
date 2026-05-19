@@ -15,6 +15,7 @@ import { Colors } from '@/constants/colors';
 import Header from '@/components/layout/Header';
 import UserInfoCard from '@/components/cards/UserInfoCard';
 import Button from '@/components/ui/Button';
+import LegalModal from '@/components/modals/LegalModal';
 
 export default function MyPageScreen() {
   const router = useRouter();
@@ -25,6 +26,8 @@ export default function MyPageScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editNickname, setEditNickname] = useState('');
   const [saving, setSaving] = useState(false);
+  const [termsVisible, setTermsVisible] = useState(false);
+  const [privacyVisible, setPrivacyVisible] = useState(false);
 
   const load = useCallback(async (userId: string, userEmail: string) => {
     try {
@@ -158,10 +161,10 @@ export default function MyPageScreen() {
                 <Text style={styles.linkText}>管理ページ</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => router.push('/terms' as any)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => setTermsVisible(true)} activeOpacity={0.7}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/privacy' as any)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => setPrivacyVisible(true)} activeOpacity={0.7}>
               <Text style={styles.linkText}>プライバシーポリシー</Text>
             </TouchableOpacity>
           </View>
@@ -179,6 +182,9 @@ export default function MyPageScreen() {
           </View>
         </ScrollView>
       </View>
+
+      <LegalModal visible={termsVisible} onClose={() => setTermsVisible(false)} type="terms" />
+      <LegalModal visible={privacyVisible} onClose={() => setPrivacyVisible(false)} type="privacy" />
 
       <Modal visible={editModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
