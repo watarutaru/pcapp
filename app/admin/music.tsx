@@ -3,12 +3,12 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, Alert, ActivityIndicator, Image, Platform,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getMusic, createMusic, updateMusic, deleteMusic, uploadMusicJacket } from '@/lib/music';
 import { Music } from '@/lib/types';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
+import ImagePickerField from '@/components/form/ImagePickerField';
 import { Colors } from '@/constants/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -75,22 +75,6 @@ export default function AdminMusicScreen() {
     setImageMime(undefined);
     setError('');
     setMode('form');
-  }
-
-  async function pickImage() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      setError('カメラロールへのアクセスを許可してください');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.9,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setImageMime(result.assets[0].mimeType ?? undefined);
-    }
   }
 
   async function handleSave() {
@@ -198,18 +182,12 @@ export default function AdminMusicScreen() {
           </Field>
 
           <Field label="ジャケット画像">
-            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-              {imageUri ? (
-                <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
-              ) : (
-                <Text style={styles.imagePickerText}>📷 カメラロールから選択</Text>
-              )}
-            </TouchableOpacity>
-            {imageUri && (
-              <TouchableOpacity onPress={pickImage} style={styles.imageChangeBtn}>
-                <Text style={styles.imageChangeBtnText}>画像を変更</Text>
-              </TouchableOpacity>
-            )}
+            <ImagePickerField
+              uri={imageUri}
+              onImageSelected={(uri, mime) => { setImageUri(uri); setImageMime(mime); }}
+              placeholder="📷 画像を選択"
+              resizeMode="cover"
+            />
           </Field>
 
           <Field label="表示順 * （小さいほど上に表示）">
@@ -345,15 +323,6 @@ const styles = StyleSheet.create({
   typeBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   typeBtnText: { color: Colors.textSecondary, fontSize: 14 },
   typeBtnTextActive: { color: '#fff', fontWeight: '700' },
-  imagePicker: {
-    backgroundColor: Colors.background, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed',
-    height: 160, justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
-  },
-  imagePickerText: { color: Colors.textSecondary, fontSize: 15 },
-  imagePreview: { width: '100%', height: '100%' },
-  imageChangeBtn: { marginTop: 8, alignSelf: 'flex-start' },
-  imageChangeBtnText: { color: Colors.primary, fontSize: 13 },
   errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginHorizontal: 20, marginTop: 12 },
   saveBtnWrapper: { marginHorizontal: 20, marginTop: 24 },
 });
