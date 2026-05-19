@@ -174,7 +174,7 @@ export default function MyPageScreen() {
               onPress={handleSignOut}
               style={styles.button}
             />
-            <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.7} style={styles.deleteButton}>
               <Text style={styles.deleteText}>アカウント削除</Text>
             </TouchableOpacity>
           </View>
@@ -266,7 +266,9 @@ const styles = StyleSheet.create({
   },
   bottomActions: {
     gap: 16,
-    alignItems: 'center',
+  },
+  deleteButton: {
+    alignSelf: 'center',
   },
   deleteText: {
     ...fonts.medium,
