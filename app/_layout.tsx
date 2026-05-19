@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import { UnreadProvider } from '@/lib/UnreadContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   useFonts,
   NotoSansMono_300Light,
@@ -129,7 +130,7 @@ export default function RootLayout() {
   if (!initialized || !isFontReady) return <View style={{ flex: 1, backgroundColor: '#f9f9f9' }} />;
 
   return (
-    <>
+    <SafeAreaProvider>
       <StatusBar style="dark" />
       <UnreadProvider>
         <Stack screenOptions={{ headerShown: false }}>
@@ -140,6 +141,6 @@ export default function RootLayout() {
           )}
         </Stack>
       </UnreadProvider>
-    </>
+    </SafeAreaProvider>
   );
 }

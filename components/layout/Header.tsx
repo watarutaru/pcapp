@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts } from '@/lib/fonts';
 import IcArrowLeft from '@/components/icons/IcArrowLeft';
 import IcClose from '@/components/icons/IcClose';
@@ -25,9 +26,10 @@ export default function Header({
   const isWhite = variant === 'white';
   const iconColor = isWhite ? '#fff' : '#222';
   const textColor = isWhite ? '#fff' : '#222';
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, { paddingTop: insets.top + 24 }, style]}>
       <View style={styles.inner}>
         {showBack && (
           <TouchableOpacity style={styles.iconLeft} onPress={onBack} hitSlop={8}>
