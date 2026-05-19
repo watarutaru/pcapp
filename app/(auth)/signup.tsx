@@ -1,24 +1,26 @@
+import { fonts } from '@/lib/fonts';
 import { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator,
+  View, Text, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { signUpWithPassword } from '@/lib/auth';
-import { Colors } from '@/constants/colors';
-import { fonts } from '@/lib/fonts';
+import LogoSvg from '@/components/LogoSvg';
+import Button from '@/components/ui/Button';
+import Form from '@/components/form/Form';
 
 export default function SignupScreen() {
+  const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSignup() {
     setError('');
-    if (!email || !password || !nickname) {
+    if (!nickname || !email || !password) {
       setError('すべての項目を入力してください');
       return;
     }
@@ -40,13 +42,19 @@ export default function SignupScreen() {
 
   if (sent) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
-        <Text style={styles.title}>確認メールを送信しました</Text>
-        <Text style={styles.description}>
-          {email} に確認メールを送信しました。{'\n'}
-          メール内のリンクをタップして登録を完了してください。
-        </Text>
+      <View style={styles.sentContainer}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.brandTitle}>Piercing Cyclone</Text>
+          <Text style={styles.brandSubtitle}>OFFICIAL APP</Text>
+        </View>
+        <LogoSvg size={120} />
+        <View style={styles.sentContent}>
+          <Text style={styles.sentHeading}>確認メールを送信しました</Text>
+          <Text style={styles.sentDescription}>
+            {email} に確認メールを送信しました。{'\n'}
+            メール内のリンクをタップして登録を完了してください。
+          </Text>
+        </View>
       </View>
     );
   }
@@ -56,51 +64,56 @@ export default function SignupScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.inner}>
-        <Text style={styles.logo}>🌀 Piercing Cyclone</Text>
-        <Text style={styles.title}>会員登録</Text>
+      <ScrollView
+        contentContainerStyle={styles.inner}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.titleBlock}>
+          <Text style={styles.brandTitle}>Piercing Cyclone</Text>
+          <Text style={styles.brandSubtitle}>OFFICIAL APP</Text>
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="ニックネーム"
-          placeholderTextColor={Colors.textSecondary}
-          value={nickname}
-          onChangeText={setNickname}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="メールアドレス"
-          placeholderTextColor={Colors.textSecondary}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="パスワード（6文字以上）"
-          placeholderTextColor={Colors.textSecondary}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <LogoSvg size={174} />
 
-        <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>登録する</Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.formGroup}>
+          <Text style={styles.heading}>会員登録</Text>
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          <Form
+            label="ニックネーム"
+            value={nickname}
+            onChangeText={setNickname}
+            variant={error && !nickname ? 'error' : 'regular'}
+          />
 
-        <Link href="/(auth)/login" asChild>
-          <TouchableOpacity style={styles.linkButton}>
-            <Text style={styles.linkText}>すでにアカウントをお持ちの方はこちら</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+          <Form
+            label="メールアドレス"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            variant={error && !email ? 'error' : 'regular'}
+          />
+
+          <Form
+            label="パスワード（6文字以上）"
+            value={password}
+            onChangeText={setPassword}
+            variant={error ? 'error' : 'password'}
+          />
+
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          <View style={styles.buttonWrap}>
+            <Button label="登録する" onPress={handleSignup} loading={loading} />
+          </View>
+
+          <Link href="/(auth)/login" asChild>
+            <TouchableOpacity style={styles.loginWrap}>
+              <Text style={styles.loginText}>すでにアカウントをお持ちの方はこちら</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -108,80 +121,90 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#fdfdfd',
   },
-  center: {
+  sentContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
-    paddingHorizontal: 32,
-    gap: 16,
+    justifyContent: 'center',
+    backgroundColor: '#fdfdfd',
+    paddingHorizontal: 46,
+    gap: 36,
   },
   inner: {
-    flex: 1,
+    flexGrow: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 46,
+    paddingVertical: 48,
+    gap: 36,
   },
-  logo: {
-    ...fonts.condensed,
-    fontSize: 28,
-    color: Colors.text,
-    textAlign: 'center',
-    marginBottom: 8,
+  titleBlock: {
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
   },
-  title: {
-    ...fonts.jpBold,
-    fontSize: 20,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  description: {
-    ...fonts.jpRegular,
-    fontSize: 15,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  input: {
+  brandTitle: {
     ...fonts.regular,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: Colors.text,
+    fontSize: 36,
+    fontWeight: '400',
+    color: '#231815',
+    letterSpacing: 0.8,
+    textAlign: 'center',
+    lineHeight: 36,
+  },
+  brandSubtitle: {
+    ...fonts.regular,
     fontSize: 16,
-    marginBottom: 16,
+    fontWeight: '300',
+    color: '#231815',
+    letterSpacing: 0.8,
+    textAlign: 'center',
   },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
+  formGroup: {
+    width: '100%',
+    gap: 16,
   },
-  buttonText: {
+  heading: {
     ...fonts.jpBold,
-    color: '#fff',
     fontSize: 16,
+    color: '#222',
+    textAlign: 'center',
   },
-  linkButton: {
-    marginTop: 24,
+  buttonWrap: {
+    paddingTop: 16,
+  },
+  loginWrap: {
     alignItems: 'center',
   },
-  linkText: {
+  loginText: {
     ...fonts.jpRegular,
-    color: Colors.textSecondary,
     fontSize: 14,
+    color: '#898989',
+    lineHeight: 14,
   },
   errorText: {
     ...fonts.jpRegular,
-    color: '#ef4444',
-    fontSize: 14,
+    fontSize: 13,
+    color: '#c0392b',
     textAlign: 'center',
-    marginTop: 12,
+  },
+  sentContent: {
+    width: '100%',
+    gap: 12,
+    alignItems: 'center',
+  },
+  sentHeading: {
+    ...fonts.jpBold,
+    fontSize: 16,
+    color: '#222',
+    textAlign: 'center',
+  },
+  sentDescription: {
+    ...fonts.jpRegular,
+    fontSize: 14,
+    color: '#898989',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });

@@ -34,7 +34,7 @@ export default function Form({
     <View style={[styles.container, style]}>
       <View style={styles.labelRow}>
         <Text style={styles.label}>{label}</Text>
-        {isPassword && (
+        {isPassword && onForgotPassword && (
           <TouchableOpacity style={styles.forgotRow} onPress={onForgotPassword}>
             <IcHelp size={14} />
             <Text style={styles.label}>お忘れの方</Text>
