@@ -1,15 +1,15 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
-  ScrollView, TextInput, Modal, Switch, Platform, KeyboardAvoidingView, Image,
+  ScrollView, TextInput, Modal, Switch, Platform, KeyboardAvoidingView,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getMysteries, createMystery, updateMystery, deleteMystery, uploadMysteryImage, uploadMysteryExplanationImage } from '@/lib/mysteries';
 import { sendPushNotificationToAll } from '@/lib/notifications';
 import { Mystery } from '@/lib/types';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
+import ImagePickerField from '@/components/form/ImagePickerField';
 import { Colors } from '@/constants/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -73,38 +73,6 @@ export default function AdminMysteryScreen() {
   function resetCandidates() {
     setAnswerCandidates([]);
     setCandidatesShown(false);
-  }
-
-  async function pickImage() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('権限エラー', 'カメラロールへのアクセスを許可してください');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.85,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setImageMime(result.assets[0].mimeType ?? undefined);
-    }
-  }
-
-  async function pickExplanationImage() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('権限エラー', 'カメラロールへのアクセスを許可してください');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.85,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setExplanationImageUri(result.assets[0].uri);
-      setExplanationImageMime(result.assets[0].mimeType ?? undefined);
-    }
   }
 
   function openAddModal() {
@@ -347,32 +315,22 @@ export default function AdminMysteryScreen() {
             />
 
             <Text style={styles.fieldLabel}>問題画像（任意）</Text>
-            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-              {imageUri ? (
-                <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="contain" />
-              ) : (
-                <Text style={styles.imagePickerText}>📷 タップして画像を選択</Text>
-              )}
-            </TouchableOpacity>
-            {imageUri && (
-              <TouchableOpacity onPress={pickImage} style={styles.imageChangeBtn}>
-                <Text style={styles.imageChangeBtnText}>画像を変更</Text>
-              </TouchableOpacity>
-            )}
+            <ImagePickerField
+              uri={imageUri}
+              onImageSelected={(uri, mime) => { setImageUri(uri); setImageMime(mime); }}
+              placeholder="📷 問題画像を選択"
+              resizeMode="contain"
+              quality={0.85}
+            />
 
             <Text style={styles.fieldLabel}>解説画像（任意）</Text>
-            <TouchableOpacity style={styles.imagePicker} onPress={pickExplanationImage}>
-              {explanationImageUri ? (
-                <Image source={{ uri: explanationImageUri }} style={styles.imagePreview} resizeMode="contain" />
-              ) : (
-                <Text style={styles.imagePickerText}>📷 タップして解説画像を選択</Text>
-              )}
-            </TouchableOpacity>
-            {explanationImageUri && (
-              <TouchableOpacity onPress={pickExplanationImage} style={styles.imageChangeBtn}>
-                <Text style={styles.imageChangeBtnText}>解説画像を変更</Text>
-              </TouchableOpacity>
-            )}
+            <ImagePickerField
+              uri={explanationImageUri}
+              onImageSelected={(uri, mime) => { setExplanationImageUri(uri); setExplanationImageMime(mime); }}
+              placeholder="📷 解説画像を選択"
+              resizeMode="contain"
+              quality={0.85}
+            />
 
             <Text style={styles.fieldLabel}>本文（謎の説明・任意）</Text>
             <TextInput
@@ -525,16 +483,6 @@ const styles = StyleSheet.create({
   },
   textArea: { minHeight: 160, paddingTop: 12 },
   hintArea: { minHeight: 80, paddingTop: 12 },
-
-  imagePicker: {
-    backgroundColor: Colors.surface, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed',
-    height: 160, justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
-  },
-  imagePickerText: { color: Colors.textSecondary, fontSize: 14 },
-  imagePreview: { width: '100%', height: '100%' },
-  imageChangeBtn: { marginTop: 6, alignSelf: 'flex-start' },
-  imageChangeBtnText: { color: Colors.primary, fontSize: 13 },
 
   answerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   answerInput: { flex: 1 },

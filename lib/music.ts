@@ -36,8 +36,16 @@ export async function deleteMusic(id: string): Promise<void> {
   if (error) throw error;
 }
 
+function getImageExt(uri: string, mimeType?: string): string {
+  const mimeExt = mimeType?.split('/')[1]?.replace('jpeg', 'jpg');
+  if (mimeExt && mimeExt.length <= 4) return mimeExt;
+  const uriExt = uri.split('.').pop()?.split('?')[0]?.toLowerCase();
+  if (uriExt && uriExt.length <= 4 && !uriExt.includes('/') && !uriExt.includes(':')) return uriExt;
+  return 'jpg';
+}
+
 export async function uploadMusicJacket(uri: string, mimeType?: string): Promise<string> {
-  const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+  const ext = getImageExt(uri, mimeType);
   const fileName = `${Date.now()}.${ext}`;
 
   const response = await fetch(uri);

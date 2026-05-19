@@ -1,8 +1,16 @@
 import { supabase } from './supabase';
 import { Mystery } from './types';
 
+function getImageExt(uri: string, mimeType?: string): string {
+  const mimeExt = mimeType?.split('/')[1]?.replace('jpeg', 'jpg');
+  if (mimeExt && mimeExt.length <= 4) return mimeExt;
+  const uriExt = uri.split('.').pop()?.split('?')[0]?.toLowerCase();
+  if (uriExt && uriExt.length <= 4 && !uriExt.includes('/') && !uriExt.includes(':')) return uriExt;
+  return 'jpg';
+}
+
 export async function uploadMysteryImage(uri: string, mimeType?: string): Promise<string> {
-  const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+  const ext = getImageExt(uri, mimeType);
   const fileName = `mystery_${Date.now()}.${ext}`;
 
   const response = await fetch(uri);
@@ -43,7 +51,7 @@ export async function getMystery(id: string): Promise<Mystery | null> {
 }
 
 export async function uploadMysteryExplanationImage(uri: string, mimeType?: string): Promise<string> {
-  const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+  const ext = getImageExt(uri, mimeType);
   const fileName = `mystery_explanation_${Date.now()}.${ext}`;
 
   const response = await fetch(uri);
