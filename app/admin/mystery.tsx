@@ -262,7 +262,7 @@ export default function AdminMysteryScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="謎管理" onBack={() => router.replace('/(tabs)/admin')} />
+      <Header title="謎管理" onBack={() => router.back()} />
 
       {loading ? (
         <View style={styles.center}>

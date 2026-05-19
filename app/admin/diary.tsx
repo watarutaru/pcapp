@@ -195,7 +195,7 @@ export default function AdminDiaryScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="日記管理" onBack={() => router.replace('/(tabs)/admin')} />
+      <Header title="日記管理" onBack={() => router.back()} />
 
       <View style={styles.flex}>
         <ScrollView contentContainerStyle={styles.list}>

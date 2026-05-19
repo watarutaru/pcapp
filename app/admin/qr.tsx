@@ -114,7 +114,7 @@ export default function AdminQrScreen() {
         >
           <View style={styles.overlay}>
             <View style={styles.topBar}>
-              <TouchableOpacity onPress={() => router.replace('/(tabs)/admin')} style={styles.backBtn}>
+              <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                 <Text style={styles.backBtnText}>← 戻る</Text>
               </TouchableOpacity>
             </View>
@@ -138,7 +138,7 @@ export default function AdminQrScreen() {
       {step === 'select_live' && (
         <View style={styles.selectContainer}>
           <View style={styles.selectHeader}>
-            <TouchableOpacity onPress={() => router.replace('/(tabs)/admin')} style={styles.backBtn2}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn2}>
               <Text style={styles.backBtnText2}>← 戻る</Text>
             </TouchableOpacity>
             <Text style={styles.selectTitle}>ライブを選択</Text>
