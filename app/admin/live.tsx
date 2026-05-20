@@ -149,7 +149,8 @@ export default function AdminLiveScreen() {
 
   if (mode === 'form') {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
+      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.formScroll}>
         <Header
           title={editingId ? 'ライブ編集' : 'ライブ追加'}
           onBack={() => { setMode('list'); setError(''); setEditingId(null); }}
@@ -286,6 +287,7 @@ export default function AdminLiveScreen() {
           />
         </View>
       </ScrollView>
+      </View>
     );
   }
 

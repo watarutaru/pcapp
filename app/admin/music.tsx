@@ -152,7 +152,8 @@ export default function AdminMusicScreen() {
   if (mode === 'form') {
     const isEditing = editingMusic !== null;
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
+      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.formScroll}>
         <Header
           title={isEditing ? 'Music編集' : 'Music追加'}
           onBack={() => { setMode('list'); setEditingMusic(null); setImageUri(null); setForm(INIT_FORM); setError(''); }}
@@ -225,6 +226,7 @@ export default function AdminMusicScreen() {
           />
         </View>
       </ScrollView>
+      </View>
     );
   }
 
