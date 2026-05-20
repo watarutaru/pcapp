@@ -207,25 +207,30 @@ export default function AdminMysteryScreen() {
     }
   }
 
-  function handleDelete(mystery: Mystery) {
-    Alert.alert(
-      '削除確認',
-      `Vol.${mystery.vol}「${mystery.title}」を削除しますか？`,
-      [
-        { text: 'キャンセル', style: 'cancel' },
-        {
-          text: '削除', style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteMystery(mystery.id);
-              await load();
-            } catch {
-              Alert.alert('エラー', '削除に失敗しました');
-            }
+  async function handleDelete(mystery: Mystery) {
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`Vol.${mystery.vol}「${mystery.title}」を削除しますか？`)) return;
+      try { await deleteMystery(mystery.id); await load(); } catch { alert('削除に失敗しました'); }
+    } else {
+      Alert.alert(
+        '削除確認',
+        `Vol.${mystery.vol}「${mystery.title}」を削除しますか？`,
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          {
+            text: '削除', style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteMystery(mystery.id);
+                await load();
+              } catch {
+                Alert.alert('エラー', '削除に失敗しました');
+              }
+            },
           },
-        },
-      ],
-    );
+        ],
+      );
+    }
   }
 
   return (

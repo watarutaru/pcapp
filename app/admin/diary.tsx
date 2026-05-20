@@ -113,7 +113,8 @@ export default function AdminDiaryScreen() {
   if (mode === 'form') {
     const isEditing = editingDiary !== null;
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.formScroll}>
+      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.formScroll}>
         <Header
           title={isEditing ? '日記編集' : '日記追加'}
           onBack={() => { setMode('list'); setEditingDiary(null); setError(''); }}
@@ -190,6 +191,7 @@ export default function AdminDiaryScreen() {
           />
         </View>
       </ScrollView>
+      </View>
     );
   }
 

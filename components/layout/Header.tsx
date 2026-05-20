@@ -36,7 +36,7 @@ export default function Header({
             <IcArrowLeft size={32} color={iconColor} />
           </TouchableOpacity>
         )}
-        <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+        <Text style={[styles.title, { color: textColor }]} pointerEvents="none">{title}</Text>
         {showClose && (
           <TouchableOpacity style={styles.iconRight} onPress={onClose} hitSlop={8}>
             <IcClose size={32} color={iconColor} />
